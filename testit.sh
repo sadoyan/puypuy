@@ -4,9 +4,9 @@
 
     oddeye)
 	rm   /tmp/oddeye_tmp/* 
-	./puypuy.sh start 
+	./oddeye.sh start 
 	sleep 3 
-	./puypuy.sh stop 
+	./oddeye.sh stop 
 	for  X in `ls /tmp/oddeye_tmp/`; 
 	 do cat /tmp/oddeye_tmp/$X | cut -d '=' -f 3 | python -mjson.tool |ccze -A ; 
 	echo '-------------------------------------------------------------------------------------------------------------------------------'
@@ -15,9 +15,9 @@
 
     influx)
 	rm   /tmp/oddeye_tmp/* 
-	./puypuy.sh start 
+	./oddeye.sh start 
 	sleep 3 
-	./puypuy.sh stop 
+	./oddeye.sh stop 
 	for  X in `ls /tmp/oddeye_tmp/`; 
 	 do cat /tmp/oddeye_tmp/$X |ccze -A ; 
 	done 
