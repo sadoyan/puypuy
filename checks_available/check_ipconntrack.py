@@ -1,6 +1,8 @@
 import lib.record_rate
 import lib.getconfig
+import lib.puylogger
 import datetime
+
 check_type = 'system'
 
 cluster_name = lib.getconfig.getparam('SelfConfig', 'cluster_name')
