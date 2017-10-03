@@ -4,33 +4,6 @@ import lib.puylogger
 import lib.pushdata
 from io import BytesIO
 
-import requests
-from requests.auth import HTTPBasicAuth
-
-
-
-
-# class CurlBuffer:
-#    def __init__(self):
-#        self.contents = ''
-#
-#    def body_callback(self, buf):
-#        self.contents = self.contents + buf
-
-
-# def httpget(name, url, auth=None):
-#     try:
-#         if auth is not None:
-#             response = requests.get(url, auth=HTTPBasicAuth(auth.split(':')[0], auth.split(':')[1]))
-#         else:
-#             response = requests.get(url)
-#
-#         return response.text
-#     except Exception as err:
-#         lib.puylogger.print_message(name + ' ' + str(err))
-#         lib.pushdata.print_error(name, err)
-
-
 
 def httpget(name, url, auth=None):
     try:
