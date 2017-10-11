@@ -1,7 +1,7 @@
 from configparser import ConfigParser
 import os
 import pwd
-
+import getpass
 class bcolors:
     HEADER = '\033[95m'
     OKBLUE = '\033[94m'
@@ -50,6 +50,7 @@ os.mkdir(tmpdir)
 if run_user == '':
     uid = os.getuid()
     gid = os.getgid()
+    run_user = getpass.getuser()
 else:
     uid = pwd.getpwnam(run_user).pw_uid
     gid = pwd.getpwnam(run_user).pw_gid
@@ -71,9 +72,9 @@ config_file = 'conf/config.ini'
 parser.read(config_file)
 
 parser['TSDB'] = {'url': url, 'uuid': uuid, 'sandbox': 'False', 'err_handler': '2', 'tsdtype': 'OddEye'}
-parser['SelfConfig'] = {'check_period_seconds': check_period, 'log_file': log_file, 'pid_file': pid_file,
-                          'cluster_name': cluster_name, 'host_group': host_group, 'tmpdir': tmpdir,
-                          'debug_log': 'False', 'run_user': run_user, 'max_cache': '50000', 'location': location}
+parser['SelfConfig'] = {'check_period_seconds': check_period, 'log_file': log_file, 'log_rotate_seconds': 3600, 'log_rotate_backups': 24,
+                        'pid_file': pid_file,'cluster_name': cluster_name, 'host_group': host_group, 'tmpdir': tmpdir,
+                        'debug_log': 'False', 'run_user': run_user, 'max_cache': '50000', 'location': location}
 
 with open(config_file, 'w') as configfile:
  parser.write(configfile)

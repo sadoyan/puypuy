@@ -2,7 +2,6 @@ import glob
 import os
 import sys
 import time
-import logging
 import threading
 from lib.daemon import daemon
 import lib.upload_cached
@@ -11,7 +10,6 @@ import lib.pushdata
 import lib.puylogger
 import lib.getconfig
 import gc
-#import datetime
 
 sys.path.append(os.path.dirname(os.path.realpath("__file__"))+'/checks_enabled')
 sys.path.append(os.path.dirname(os.path.realpath("__file__"))+'/lib')
@@ -27,13 +25,6 @@ library_list = []
 os.chdir("checks_enabled")
 
 checklist = glob.glob("check_*.py")
-
-logger = logging.getLogger("PuyPuy")
-logger.setLevel(logging.INFO)
-formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
-handler = logging.FileHandler(log_file)
-handler.setFormatter(formatter)
-logger.addHandler(handler)
 
 
 def run_shell_scripts():
@@ -64,10 +55,12 @@ def run_scripts():
                 for b in a:
                     if 'reaction' not in b:
                         b.update({'reaction': 0})
+                    if 'hostname' not in b:
+                        b.update({'hostname': lib.pushdata.hostname})
                     for extra_tag in extra_tags:
                         if extra_tag not in b:
                             b.update({extra_tag: 'None'})
-                    jsondata.gen_data(b['name'], b['timestamp'], b['value'], lib.pushdata.hostname, b['check_type'], cluster_name, b['reaction'], b['chart_type'])
+                    jsondata.gen_data(b['name'], b['timestamp'], b['value'], b['hostname'], b['check_type'], cluster_name, b['reaction'], b['chart_type'])
                 # jsondata.put_json()
                 lib.puylogger.print_message(message)
             except Exception as e:
