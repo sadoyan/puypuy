@@ -12,6 +12,7 @@ def httpget(name, url, auth=None):
         c.setopt(c.URL, url)
         c.setopt(c.WRITEDATA, buffer)
         c.setopt(c.FAILONERROR, True)
+        c.setopt(pycurl.USERAGENT, 'OddEye.co (Python agent)')
         c.setopt(pycurl.CONNECTTIMEOUT, 10)
         c.setopt(pycurl.TIMEOUT, 10)
         c.setopt(pycurl.NOSIGNAL, 5)
