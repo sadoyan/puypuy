@@ -2,9 +2,11 @@ import lib.puylogger
 
 last_value = {}
 
+
 class ValueRate(object):
 
     metrics_value_rate = 0.0
+
     def __init__(self):
         self.metrics_value_rate = 0.0
 
@@ -24,7 +26,6 @@ class ValueRate(object):
                     lib.puylogger.print_message(__name__ + ' ' + str(mytype) + ' ' + str(last_value) + ' ' + str("{:.2f}".format(metrics_rate)))
                 if metrics_rate < 0.0:
                     metrics_rate = 1.0
-                #lib.puylogger.print_message(__name__ + ' ' + str(mytype) + ' ' + str(type(metrics_rate)))
                 return float("{:.2f}".format(metrics_rate))
             except Exception as e:
                 push = __import__('pushdata')
@@ -35,4 +36,26 @@ class ValueRate(object):
         pass
 
 
+prev_value = {}
+
+
+class GetPrevValue(object):
+    metrics_last_value = 0.0
+    def __init__(self):
+        self.metrics_last_value = 0.0
+    def return_last_value(self, mytype, myvalue):
+        try:
+            if mytype not in prev_value:
+                prev_value.update({mytype: myvalue})
+                return 0.0
+            else:
+                lastvalue = prev_value[mytype]
+                prev_value.update({mytype: myvalue})
+                if lib.puylogger.debug_log:
+                    lib.puylogger.print_message(__name__ + ' Prev List : ' + str(prev_value))
+                return lastvalue
+        except Exception as e:
+            push = __import__('pushdata')
+            push.print_error(__name__, (e))
+            pass
 
