@@ -1,5 +1,6 @@
 import time
 import lib.getconfig
+
 import logging.handlers
 
 cluster_name = lib.getconfig.getparam('SelfConfig', 'cluster_name')
@@ -17,6 +18,8 @@ logger = logging.getLogger('main')
 logger.addHandler(log)
 logger.setLevel(logging.INFO)
 logger.propagate = False
+
+
 
 def print_message(message):
     mssg = str(time.strftime("[%F %H %M:%S] ")) + message

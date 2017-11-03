@@ -47,21 +47,12 @@ def run_scripts():
         jsondata.prepare_data()
         for modol in modules:
             try:
-                # jsondata.prepare_data()
                 start_time = time.time()
                 a = modol.runcheck()
                 time_elapsed = "{:.9f}".format(time.time() - start_time) + " seconds"
                 message = time_elapsed + ' ' + str(modol).split("'")[1]
                 for b in a:
-                    if 'reaction' not in b:
-                        b.update({'reaction': 0})
-                    if 'hostname' not in b:
-                        b.update({'hostname': lib.pushdata.hostname})
-                    for extra_tag in extra_tags:
-                        if extra_tag not in b:
-                            b.update({extra_tag: 'None'})
-                    jsondata.gen_data(b['name'], b['timestamp'], b['value'], b['hostname'], b['check_type'], cluster_name, b['reaction'], b['chart_type'])
-                # jsondata.put_json()
+                    jsondata.gen_data_json(b, lib.pushdata.hostname, cluster_name)
                 lib.puylogger.print_message(message)
             except Exception as e:
                 lib.puylogger.print_message(str(e))

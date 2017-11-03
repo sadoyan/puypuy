@@ -12,8 +12,8 @@ def httpget(name, url, auth=None):
         c.setopt(c.URL, url)
         c.setopt(c.WRITEDATA, buffer)
         c.setopt(c.FAILONERROR, True)
-        c.setopt(pycurl.USERAGENT, 'OddEye.co (Python agent)')
         c.setopt(pycurl.CONNECTTIMEOUT, 10)
+        c.setopt(pycurl.USERAGENT, 'OddEye.co (Python agent)')
         c.setopt(pycurl.TIMEOUT, 10)
         c.setopt(pycurl.NOSIGNAL, 5)
         if auth is not None:
@@ -38,11 +38,8 @@ def socketget(name, buff, host, port, message):
         s.send(message.encode())
         raw_data = s.recv(buff).decode()
         s.close()
-        # lib.puylogger.print_message(name + ' ' + str(raw_data))
         return raw_data
     except Exception as err:
         lib.puylogger.print_message(name + ' ' + str(err))
         lib.pushdata.print_error(name, err)
 
-# def hostname():
-#     return socket.getfqdn()
