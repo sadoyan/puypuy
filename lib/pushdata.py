@@ -11,7 +11,7 @@ import uuid
 import lib.puylogger
 import lib.getconfig
 from io import BytesIO
-import zlib
+# import zlib
 
 cluster_name = lib.getconfig.getparam('SelfConfig', 'cluster_name')
 host_group = lib.getconfig.getparam('SelfConfig', 'host_group')
@@ -24,6 +24,7 @@ location = lib.getconfig.getparam('SelfConfig', 'location')
 hostname = socket.getfqdn()
 c = pycurl.Curl()
 
+extra_tags = ('device', 'container')
 if (tsdb_type == 'KairosDB' or tsdb_type == 'OpenTSDB'):
     tsdb_url = lib.getconfig.getparam('TSDB', 'address') + lib.getconfig.getparam('TSDB', 'datapoints')
     tsdb_auth = lib.getconfig.getparam('TSDB', 'user') + ':' + lib.getconfig.getparam('TSDB', 'pass')
@@ -72,14 +73,27 @@ class JonSon(object):
             tag_type = b['check_type']
         else:
             tag_type = 'None'
+
         if tsdb_type == 'KairosDB':
-            self.data['metric'].append({"name": b["name"], "timestamp": b["timestamp"] * 1000, "value": b["value"], "tags": {"host": tag_hostname, "type": tag_type, "cluster": cluster_name, "group": host_group, "location": location}})
+            local_data = {"name": b["name"], "timestamp": b["timestamp"] * 1000, "value": b["value"], "tags": {"host": tag_hostname, "type": tag_type, "cluster": cluster_name, "group": host_group, "location": location}}
+            if 'extra_tag' in b:
+                for a in b['extra_tag']:
+                    local_data["tags"][a] = b['extra_tag'][a]
+            self.data['metric'].append(local_data )
         elif tsdb_type == 'OpenTSDB':
-            self.data['metric'].append({"metric": b["name"], "timestamp": b["timestamp"], "value": b["value"], "tags": {"host": tag_hostname, "type": tag_type, "cluster": cluster_name, "group": host_group, "location": location}})
+            local_data = {"metric": b["name"], "timestamp": b["timestamp"], "value": b["value"], "tags": {"host": tag_hostname, "type": tag_type, "cluster": cluster_name, "group": host_group, "location": location}}
+            if 'extra_tag' in b:
+                for a in b['extra_tag']:
+                    local_data["tags"][a] = b['extra_tag'][a]
+            self.data['metric'].append(local_data)
         elif tsdb_type == 'BlueFlood':
             raise NotImplementedError('BlueFlood is not supported yet')
         elif tsdb_type == 'Carbon':
-            self.data.append((cluster_name + '.' + host_group + '.' + path + '.' + b["name"], (b["timestamp"], b["value"])))
+            s = cluster_name + '.' + host_group + '.' + path + '.' + location + '.' + tag_type
+            if 'extra_tag' in b:
+                for a in b['extra_tag']:
+                    s = s + '.' + str(b['extra_tag'][a])
+            self.data.append((s + "." + b["name"], (b["timestamp"], b["value"])))
         elif tsdb_type == 'InfluxDB':
             nanotime = lambda: int(round(time.time() * 1000000000))
             str_nano = str(nanotime())
@@ -87,10 +101,10 @@ class JonSon(object):
                 value = str(b["value"]) + 'i'
             else:
                 value = str(b["value"])
-            s =  b["name"] + ',host=' + tag_hostname + ',cluster=' + cluster_name + ',group=' + host_group + ',location=' + location + ',type=' + tag_type;
-            if 'device' in b:
-                s = s + ',device=' + b['device']
-
+            s = b["name"] + ',host=' + tag_hostname + ',cluster=' + cluster_name + ',group=' + host_group + ',location=' + location + ',type=' + tag_type;
+            if 'extra_tag' in b:
+                for a in b['extra_tag']:
+                    s = s + ',' + str(a) + '=' + str(b['extra_tag'][a])
             self.data.append(s  + ' value=' + value + ' ' + str_nano+ '\n')
         elif tsd_oddeye is True:
             local_data = {"metric": b["name"], "timestamp":b["timestamp"] , "value":b["value"],
@@ -102,7 +116,7 @@ class JonSon(object):
               local_data["type"] = 'None'
 
             if 'reaction' in b:
-              local_data["reaction"]= b['reaction']
+              local_data["reaction"] = b['reaction']
             else:
               local_data["reaction"] = 0
 
@@ -111,10 +125,12 @@ class JonSon(object):
             else:
               local_data["tags"]["type"] = 'None'
 
-            if 'device' in b:
-                local_data["tags"]["device"] = b['device']
+            if 'extra_tag' in b:
+                for a in b['extra_tag']:
+                    local_data["tags"][a] = b['extra_tag'][a]
 
             self.data['metric'].append(local_data)
+
 
     def gen_data(self, name, timestamp, value, tag_hostname, tag_type, cluster_name, reaction=0, metric_type='None'):
         if tsdb_type == 'KairosDB':
