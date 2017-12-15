@@ -1,29 +1,45 @@
-**PuyPuy**
+**OddEye Agent**
 ---------
 
-PuyPuy is python2 metrics collection daemon for OddEye, which also works with KairosDB, OpenTDB, Graphite and InfluxDB, For InfluxDB, KairosDB and OpenTSDB it uses REST interface, for Graphite Pickle.
+OE-Agent3 is python3 metrics collection daemon for OddEye monitoring suite.
 
-Main idea behind PuyPuy is simplicity and less as possible dependencies, it is tested on Debian and Ubuntu systems, but should work on any Linux system.   
+[OddEye](#oddeye)
 
-To install PuyPuy just clone our repository. Base program requires only pycurl as external dependency. 
+We have developed OE-Agent to support number of other OpenSource backends :
+
+[OpenTDB](#opentsdb)
+
+[KairosDB](#kairosdb)
+
+[InfluxDB](#influxdb)
+
+[Graphite](#graphite-carbon)
+
+
+It uses REST and Pickle protocols with bulk uploads to talk to endpoints, 
+so make sure your endpoint i configured properly. 
+
+Main idea behind OddEye Agent is simplicity and less as possible dependencies, it is tested on Debian and Ubuntu systems, but should work on any Linux system.   
+
+To install OddEye Agent just clone our repository. Base program requires only pycurl as external dependency. 
 On Debian/Ubuntu you can install it via apt-get
  
-    apt-get install python-pycurl 
+    apt-get install python3-pycurl 
 On RedHat systems:
  
-    yum install python-pycurl
+    yum install python3-pycurl
 Via python pip: 
 
-    pip install pycurl
+    pip3 install pycurl
 
 Some checks requires additional modules for example check_mysql requires MySQLdb. So make sure to install it before using MySQL check 
 Debian/Ubuntu : 
 
-    apt-get install python-mysqldb
+    apt-get install python3-mysqldb
 
 Python pip: 
     
-    pip install MySQL-python
+    pip3 install MySQL-python
     
 Make your changes if needed in config.ini and run 
 
@@ -32,7 +48,7 @@ Python daemon process will start, run all python scripts from checks_available d
 
 ### Main Config
 
-OddEye client (PuyPuy) uses simple ini files to configure main service and all checks. Configs are splitted into sections. Section [SelfConfig] contains base config parameters like checks interval, log/pid file location as well as some basic tags. 
+OddEye client (OddEye Agent) uses simple ini files to configure main service and all checks. Configs are splitted into sections. Section [SelfConfig] contains base config parameters like checks interval, log/pid file location as well as some basic tags. 
 
     [SelfConfig]
     check_period_seconds = 5
@@ -47,13 +63,13 @@ cluster_name and host_group are placeholders for tags for better manageability.
 In section [TSDB] you should set correct backend and uri. 
 
 ### Back End Config
-To make it run you need to change **uuid** to one which you got during registration and start PuyPuy, optionally change run user from oddeye.sh and start 
+To make it run you need to change **uuid** to one which you got during registration and start OddEye Agent, optionally change run user from oddeye.sh and start 
 
     ./oddeye.sh start 
 
-OddEye server is native backend, but PuyPuy can for with number of other open source backends. All configs are done at TSDB section of config.ini. Only one TSDB can be set at once, so make sure that all other are ether commented out or deleted from config file. 
+OddEye server is native backend, but OddEye Agent can for with number of other open source backends. All configs are done at TSDB section of config.ini. Only one TSDB can be set at once, so make sure that all other are ether commented out or deleted from config file. 
 
-**OddEye:** 
+#### **OddEye** 
 
     [TSDB]
     tsdtype = OddEye
@@ -62,11 +78,11 @@ OddEye server is native backend, but PuyPuy can for with number of other open so
     sandbox = False
     err_handler = 2
 
-As PuyPuy send metrics with small bulks you should enable chunked requests in opentsdb.conf
+As OddEye Agent send metrics with small bulks you should enable chunked requests in opentsdb.conf
 
 	tsd.http.request.enable_chunked = true
 
-**OpenTSDB**
+#### **OpenTSDB**
 
 	[TSDB]
 	tsdtype: OpenTSDB
@@ -78,7 +94,7 @@ As PuyPuy send metrics with small bulks you should enable chunked requests in op
 
 OpenTSDB is designed to run in private networks and does not supports authentication, but if you want it to be public available, you can use any proxy server like Haproxy or NginX with basic auth enabled and configure credentials in  config.ini. If you do not need authentication, just set auth param to False and some placeholders as user/pass.  **Do not delete user/pass/auth parameters.**
 
-**KairosDB** 
+#### **KairosDB** 
  
 	[TSDB]
 	address: http://kairosdb_address:8088
@@ -90,7 +106,7 @@ OpenTSDB is designed to run in private networks and does not supports authentica
 
 Enable or disable auth: in accordance to your KairosDB setup 
 
-**InfluxDB**
+#### **InfluxDB**
 
     [TSDB]
     address: http://influxdb_address:8086
@@ -102,7 +118,7 @@ Enable or disable auth: in accordance to your KairosDB setup
 
 Enable or disable authentication.
  
-**Graphite Carbon** 
+#### **Graphite Carbon** 
 
 	[TSDB]
 	address: carbon_host:2004
@@ -111,18 +127,18 @@ Enable or disable authentication.
 	auth: false
 	tsdtype: Carbon
 
-PuyPuy uses Carbon pickle, default port is 2004
+OddEye Agent uses Carbon pickle, default port is 2004
 
-PuyPuy is completely stateless, so if you want to scale Backend, you can use any load balancing mechanism including DNS Round Robin.  
+OddEye Agent is completely stateless, so if you want to scale Backend, you can use any load balancing mechanism including DNS Round Robin.  
 
 For all types of REST Backens (OpenTSDB, KairosDB, InfluxDB) config fields user/pass are mandatory even if you do not user authentication at backend.
 So **Do not delete authentication parameters**,  just write something meaningless and use it as placeholder. 
 
 ### Configure modules
 
-By default all checks are disabled . To enable check you need to create symlink  or copy check module from PUYPUY_HOME/checks_available to PUYPUY_HOME/checks_enable checks-available
+By default all checks are disabled . To enable check you need to create symlink  or copy check module from OE-AGENT_HOME/checks_available to OE-AGENT_HOME/checks_enable checks-available
 
-    cd $PUYPUY_HOME/checks_enabled
+    cd $OE-AGENT_HOME/checks_enabled
     ln -s ../checks_available/check_cpustats.py ./
     ../oddeye.sh restart 
 
@@ -141,52 +157,58 @@ Some checks depends on non standard python modules, like check_mysql.py depends 
 
     '''
     This check required Python MySQLDB, On Debian like systems do
-    apt-get install python-mysqldb
+    apt-get install python3-mysqldb
     or
-    pip install MySQL-python
+    pip3 install MySQL-python
     '''
 
 ### Create own python module 
 
-Create file in checks_enabled directory with name check_checkname.py, inside script you should have function with name runcheck() (Here you actual check should live). Naming of check files and check functions is important. Name of files should be check_something.py, main function inside it which will run in loop and do actual checks should be named runcheck(). 
-Your check should contain some  minimal imports in order to talk to main program: 
+Create file in checks_enabled directory with name check_checkname.py, 
+inside script import lib.basecheck and subclass Check inherited from lib.basecheck.CheckBase . 
+in subclass you should have function precheck, where your actual check should leave. 
+Example below demonstrates how you can send single metric with random value from 100 to 200 using custom module      
 
-	import lib.record_rate
-	import lib.pushdata
+**Create scripts which which send metrics as it comes :**
 
-	hostname = socket.getfqdn()
-	cluster_name = config.get('SelfConfig', 'cluster_name')
-	check_type = 'test'
+```python
+import lib.puylogger
+import lib.basecheck
+import random 
 
-	def runcheck()
-	    jsondata=lib.pushdata.JonSon()
-	    jsondata.prepare_data()
-	    timestamp = int(datetime.datetime.now().strftime("%s"))
-		name='CheckName'
-	    value=10
+check_type = 'system'
+
+class Check(lib.basecheck.CheckBase):
+    def precheck(self):
+        try:
+            value = random.randint(100, 200)
+            self.local_vars.append({'name': 'my_check_name', 'timestamp': self.timestamp, 'value': value, 'check_type': check_type})
+        except Exception as e:
+            lib.puylogger.print_message(__name__ + ' Error : ' + str(e))
+            pass
+```
 
 This will import needed libs to generate and send to time series server needed json files, so you do not have to deal with generating and pushing it manually. 
 
-After grabbing needed metrics, send it to uploader (pushdata.py) by calling 
-			
-	jsondata.gen_data(name, timestamp, value, hostname, check_type,cluster_name)
-
-Next push data to TSDB and truncate local copy: 
-
-	jsondata.put_json()
-
 **Create scripts which calculates value rates :** 
 
-	def runcheck()
-	    rate=lib.record_rate.ValueRate()
-	    jsondata=lib.pushdata.JonSon()
-	    jsondata.prepare_data()
-	    name='some_metric'
-	    value=10 # Values needed for calculations rate 
-	    timestamp = int(datetime.datetime.now().strftime("%s"))
-	    value_rate=rate.record_value_rate(key, value, timestamp)
-		jsondata.gen_data(key, timestamp, value_rate, lib.pushdata, check_type, cluster_name)
-	jsondata.put_json()
+```python
+import lib.puylogger
+import lib.basecheck
+import random 
+
+check_type = 'system'
+
+class Check(lib.basecheck.CheckBase):
+    def precheck(self):
+        try:
+            value = random.randint(100, 200)
+            rated = self.rate.record_value_rate('my_check_name', value, self.timestamp)
+            self.local_vars.append({'name': 'my_check_name', 'timestamp': self.timestamp, 'value': rated, 'check_type': check_type})
+        except Exception as e:
+            lib.puylogger.print_message(__name__ + ' Error : ' + str(e))
+            pass
+```
 
 ### Create custom non python module 
 
@@ -218,50 +240,57 @@ As OddEye is completely push based and our servers does not have any direct acce
 
 OddEye is dynamic system based on machine learning, but if you want to have statically defined alerts you can use  `send_special` method in python module. Example below demonstrates how custom alerts can be configured its taken from check_load_average: 
 
-    reaction = -3
-    warn_level = 90
-    crit_level = 100
-    
-    def runcheck():
-    
+```python
+import lib.getconfig
+import lib.pushdata
+import lib.basecheck
+
+warn_level = int(lib.getconfig.getparam('System Thresholds', 'load_high'))
+crit_level = int(lib.getconfig.getparam('System Thresholds', 'load_severe'))
+check_type = 'system'
+reaction = -3
+
+
+class Check(lib.basecheck.CheckBase):
+
+    def precheck(self):
         cpucount = 0
-        for line in open("/proc/stat", "r").xreadlines():
+        procstats = open("/proc/stat", "r")
+        for line in procstats:
             if 'cpu' in line:
                 cpucount += 1
-        cpucount -=1
-        check_type = 'system'
-        #sys.path.append(os.path.split(os.path.dirname(__file__))[0]+'/lib')
-        jsondata=lib.pushdata.JonSon()
-        jsondata.prepare_data()
-        timestamp = int(datetime.datetime.now().strftime("%s"))
-    
+        cpucount -= 1
+        procstats.close()
+
         try:
-            proc_loadavg=open("/proc/loadavg", "r").readline().split()
-    
-            def send_special():
-                curr_level = float(proc_loadavg[0]) * 100 / cpucount
-                if curr_level < warn_level:
-                    health_value = 0
-                    err_type = 'OK'
-                if curr_level >= warn_level < crit_level:
-                    health_value = 8
-                    err_type = 'WARNING'
-                if curr_level >= crit_level:
-                    health_value = 16
-                    err_type = 'ERROR'
+            loadavg = open("/proc/loadavg", "r")
+            proc_loadavg = loadavg.readline().split()
+            curr_level = float(proc_loadavg[0]) * 100 / cpucount
+            if curr_level < warn_level:
+                health_value = 0
+                err_type = 'OK'
                 health_message = err_type + ': System Load average is at ' + str(curr_level) + ' percent of available  resources'
-                jsondata.send_special("Load-Average", timestamp, health_value, health_message, err_type)
-            send_special()
-    
-            jsondata.gen_data('sys_load_1', timestamp, proc_loadavg[0], lib.pushdata.hostname, check_type, cluster_name)
-            jsondata.gen_data('sys_load_5', timestamp, proc_loadavg[1], lib.pushdata.hostname, check_type, cluster_name, reaction)
-            jsondata.gen_data('sys_load_15', timestamp, proc_loadavg[2], lib.pushdata.hostname, check_type, cluster_name, reaction)
-    
-            jsondata.put_json()
+                self.jsondata.send_special("Load-Average", self.timestamp, health_value, health_message, err_type)
+            if warn_level <= curr_level < crit_level:
+                health_value = 8
+                err_type = 'WARNING'
+                health_message = err_type + ': System Load average is at ' + str(curr_level) + ' percent of available  resources'
+                self.jsondata.send_special("Load-Average", self.timestamp, health_value, health_message, err_type)
+            if curr_level >= crit_level:
+                health_value = 16
+                err_type = 'ERROR'
+                health_message = err_type + ': System Load average is at ' + str(curr_level) + ' percent of available  resources'
+                self.jsondata.send_special("Load-Average", self.timestamp, health_value, health_message, err_type)
+
+            self.local_vars.append({'name': 'sys_load_1', 'timestamp': self.timestamp, 'value': proc_loadavg[0]})
+            self.local_vars.append({'name': 'sys_load_5', 'timestamp': self.timestamp, 'value': proc_loadavg[1], 'reaction': reaction})
+            self.local_vars.append({'name': 'sys_load_15', 'timestamp': self.timestamp, 'value': proc_loadavg[2], 'reaction': reaction})
+
+            loadavg.close()
         except Exception as e:
             lib.pushdata.print_error(__name__ , (e))
             pass
-
+```
 You can disable or change dynamic alerting for particular checks, by passing `reaction` parameter to `jsondata.gen_data` . Its done this way : 
 
     reaction = -3 # (Disables dynamic alerting and learning on this check)
@@ -279,6 +308,6 @@ We have created another **OddEye** specific optional parameter. This is to tell 
 
     jsondata.gen_data(txname, timestamp, value, lib.pushdata.hostname, check_type, cluster_name, reaction, 'Counter')
 
-------------
+[Full documentation](https://www.oddeye.co/documentation/)
 
 
