@@ -17,7 +17,6 @@ sys.path.append(os.path.dirname(os.path.realpath("__file__"))+'/lib')
 cron_interval = int(lib.getconfig.getparam('SelfConfig', 'check_period_seconds'))
 log_file = lib.getconfig.getparam('SelfConfig', 'log_file')
 pid_file = lib.getconfig.getparam('SelfConfig', 'pid_file')
-
 tsdb_type = lib.getconfig.getparam('TSDB', 'tsdtype')
 
 library_list = []
@@ -30,16 +29,17 @@ checklist = glob.glob("check_*.py")
 def run_shell_scripts():
     lib.run_bash.run_shell_scripts()
 
+
 module_names = []
 for checks in checklist:
     module_names.append(checks.split('.')[0])
 modules = list(map(__import__, module_names))
 
+
 cluster_name = lib.getconfig.getparam('SelfConfig', 'cluster_name')
-
 extra_tags = ('chart_type', 'check_type')
-
 jsondata = lib.pushdata.JonSon()
+
 
 def run_scripts():
     try:
@@ -47,12 +47,21 @@ def run_scripts():
         jsondata.prepare_data()
         for modol in modules:
             try:
+                # jsondata.prepare_data()
                 start_time = time.time()
-                a = modol.runcheck()
+                a = modol.Check().runcheck()
                 time_elapsed = "{:.9f}".format(time.time() - start_time) + " seconds"
                 message = time_elapsed + ' ' + str(modol).split("'")[1]
                 for b in a:
-                    jsondata.gen_data_json(b, lib.pushdata.hostname, cluster_name)
+                #     if 'reaction' not in b:
+                #         b.update({'reaction': 0})
+                #     for extra_tag in extra_tags:
+                #         if extra_tag not in b:
+                #             b.update({extra_tag: 'None'})
+                    # jsondata.gen_data(b['name'], b['timestamp'], b['value'], lib.pushdata.hostname, b['check_type'], cluster_name, b['reaction'], b['chart_type'])
+                    jsondata.gen_data_json(b, b['host'], cluster_name)
+
+                # lib.puylogger.print_message(json.dumps(jsondata.data, indent=4))
                 lib.puylogger.print_message(message)
             except Exception as e:
                 lib.puylogger.print_message(str(e))
@@ -61,6 +70,7 @@ def run_scripts():
         lib.puylogger.print_message('Spent ' + time_elapsed2 + 'to complete interation')
     except Exception as e:
         lib.puylogger.print_message(str(e))
+
 
 def upload_cache():
     lib.upload_cached.cache_uploader()
