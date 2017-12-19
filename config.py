@@ -23,7 +23,7 @@ print(bcolors.ENDC + " " + bcolors.ENDC)
 
 url = 'https://api.oddeye.co/oddeye-barlus/put/tsdb'
 sandbox = 'False'
-err_handler = 2
+error_handler = 2
 tsdtype = 'OddEye'
 check_period = 10
 debug_log = 'False'
@@ -71,8 +71,8 @@ config_file = 'conf/config.ini'
 
 parser.read(config_file)
 
-parser['TSDB'] = {'url': url, 'uuid': uuid, 'sandbox': 'False', 'err_handler': '2', 'tsdtype': 'OddEye'}
-parser['SelfConfig'] = {'check_period_seconds': check_period, 'log_file': log_file, 'log_rotate_seconds': 3600, 'log_rotate_backups': 24,
+parser['TSDB'] = {'url': url, 'uuid': uuid, 'sandbox': 'False', 'tsdtype': 'OddEye'}
+parser['SelfConfig'] = {'check_period_seconds': check_period, 'error_handler': '2', 'log_file': log_file, 'log_rotate_seconds': 3600, 'log_rotate_backups': 24,
                         'pid_file': pid_file,'cluster_name': cluster_name, 'host_group': host_group, 'tmpdir': tmpdir,
                         'debug_log': 'False', 'run_user': run_user, 'max_cache': '50000', 'location': location}
 
