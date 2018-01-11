@@ -2,6 +2,10 @@ from configparser import ConfigParser
 import os
 import pwd
 import getpass
+import grp
+import sys
+import subprocess
+
 class bcolors:
     HEADER = '\033[95m'
     OKBLUE = '\033[94m'
@@ -62,19 +66,37 @@ for root, dirs, files in os.walk(base_dir, topdown=False):
         os.chown((os.path.join(root, name)), uid, gid)
 
 conf_system_checks = input("Do you want me to enable basic system checks (yes/no): ")
+systemd_service = input("Do you want to run OddEye agent at system boot (yes/no): ")
+
 while conf_system_checks not in ['yes', 'no']:
     print(bcolors.FAIL + 'Please write yes or no ' + bcolors.FAIL)
     conf_system_checks = input("Do you want me to enable basic system checks (yes/no): ")
 
 parser = ConfigParser()
 config_file = 'conf/config.ini'
-
 parser.read(config_file)
+service_file = '/lib/systemd/system/oe-agent.service'
+sparser = ConfigParser()
+sparser.optionxform= str
 
 parser['TSDB'] = {'url': url, 'uuid': uuid, 'sandbox': 'False', 'tsdtype': 'OddEye'}
 parser['SelfConfig'] = {'check_period_seconds': check_period, 'error_handler': '2', 'log_file': log_file, 'log_rotate_seconds': 3600, 'log_rotate_backups': 24,
                         'pid_file': pid_file,'cluster_name': cluster_name, 'host_group': host_group, 'tmpdir': tmpdir,
                         'debug_log': 'False', 'run_user': run_user, 'max_cache': '50000', 'location': location}
+
+sparser['Unit'] = {'Description': 'OddEye Agent Service', 'After': 'syslog.target'}
+sparser['Install'] = {'WantedBy': 'multi-user.target'}
+
+groups = [g.gr_name for g in grp.getgrall() if run_user in g.gr_mem]
+gid = pwd.getpwnam(run_user).pw_gid
+group = grp.getgrgid(gid).gr_name
+
+sparser['Service'] = {'Type': 'simple', 'User': run_user, 'Group': group, 'WorkingDirectory': base_dir + '/',
+                      'ExecStart': sys.executable + ' ' + base_dir + '/oddeye.py  start', 'PIDFile': pid_file}
+
+
+with open(service_file, 'w') as servicefile:
+ sparser.write(servicefile)
 
 with open(config_file, 'w') as configfile:
  parser.write(configfile)
@@ -95,6 +117,21 @@ elif conf_system_checks == 'no':
 else:
     print(bcolors.FAIL + ' ' + bcolors.FAIL)
     print(bcolors.FAIL + 'Failed to enable systems checks, please enable it manually' + bcolors.FAIL)
+
+
+if systemd_service == 'yes':
+    subprocess.Popen('systemctl daemon-reload', stdout=subprocess.PIPE, shell=True).communicate()
+    subprocess.Popen('systemctl enable oe-agent.service', stdout=subprocess.PIPE, shell=True).communicate()
+    subprocess.Popen('systemctl start oe-agent', stdout=subprocess.PIPE, shell=True).communicate()
+    print(bcolors.OKGREEN + 'Autostart of oe-agent is enabled' + bcolors.OKGREEN)
+elif conf_system_checks == 'no':
+    print(bcolors.OKGREEN + ' ' + bcolors.OKGREEN)
+    print(bcolors.OKGREEN + 'Will not run oe-agent on boot, please manually start it' + bcolors.OKGREEN)
+else:
+    print(bcolors.FAIL + ' ' + bcolors.FAIL)
+    print(bcolors.FAIL + 'Failed to add oe-agent to autostart' + bcolors.FAIL)
+
+
 
 for root, dirs, files in os.walk(base_dir, topdown=False):
     for name in files:
