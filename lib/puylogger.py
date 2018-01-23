@@ -1,8 +1,5 @@
-# import logging
 import time
 import lib.getconfig
-# import os
-# import gzip
 
 import logging.handlers
 
@@ -14,34 +11,18 @@ log_file = lib.getconfig.getparam('SelfConfig', 'log_file')
 backupcount = int(lib.getconfig.getparam('SelfConfig', 'log_rotate_backups'))
 seconds = int(lib.getconfig.getparam('SelfConfig', 'log_rotate_seconds'))
 
-# def print_message(message):
-#     logger = logging.getLogger("PuyPuy")
-#     logger.setLevel(logging.INFO)
-#     logging.basicConfig(filename=log_file, level=logging.INFO)
-#     logging.info(str(time.strftime(" [%F %H %M:%S] ")) + message)
-
-
-# class GZipRotator:
-#     def __call__(self, source, dest):
-#         os.rename(source, dest)
-#         f_in = open(dest, 'rb')
-#         f_out = gzip.open("%s.gz" % dest, 'wb')
-#         f_out.writelines(f_in)
-#         f_out.close()
-#         f_in.close()
-#         os.remove(dest)
-
 
 log = logging.handlers.TimedRotatingFileHandler(log_file, 's', seconds, backupCount=backupcount)
 log.setLevel(logging.INFO)
-# log.rotator = GZipRotator()
 logger = logging.getLogger('main')
 logger.addHandler(log)
 logger.setLevel(logging.INFO)
 logger.propagate = False
 
 
-
 def print_message(message):
     mssg = str(time.strftime("[%F %H %M:%S] ")) + message
     logger.info(mssg)
+
+def print_raw_message(message):
+    logger.info(message)

@@ -23,7 +23,7 @@ class CheckBase:
 
     def info(self):
         for t in self.local_vars:
-            lib.puylogger.print_message(self.__module__ + ' : ' + str(t))
+            lib.puylogger.print_raw_message(self.__module__ + ' : ' + str(t))
 
     def precheck(self):
         pass
@@ -31,7 +31,8 @@ class CheckBase:
     def runcheck(self):
         self.local_vars = []
         self.precheck()
-        # self.info()
+        # if self.debug_info is True:
+        #     self.info()
         for k in self.local_vars:
             if 'host' not in k:
                 k['host'] = lib.pushdata.hostname

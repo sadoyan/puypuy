@@ -23,7 +23,6 @@ crit_level = lib.getconfig.getparam('CPU Stats', 'severe')
 
 class Check(lib.basecheck.CheckBase):
 
-
     def calcperraw(self,cpu_stats,rate,timestamp,local_vars,metrinames, device="all"):
         time = cpu_stats[0]+cpu_stats[1]+cpu_stats[2]+cpu_stats[3]
         rate_time = rate.record_value_delta("time"+device, time)
