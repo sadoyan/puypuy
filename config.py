@@ -94,7 +94,7 @@ gid = pwd.getpwnam(run_user).pw_gid
 group = grp.getgrgid(gid).gr_name
 
 sparser['Service'] = {'Type': 'simple', 'User': run_user, 'Group': group, 'WorkingDirectory': base_dir + '/',
-                      'ExecStart': sys.executable + ' ' + base_dir + '/oddeye.py  start', 'PIDFile': pid_file}
+                      'ExecStart': sys.executable + ' ' + base_dir + '/oddeye.py systemd', 'PIDFile': pid_file, 'Restart': 'on-failure'}
 
 
 with open(service_file, 'w') as servicefile:
