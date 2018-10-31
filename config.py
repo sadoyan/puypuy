@@ -44,14 +44,17 @@ if input_base_dir == '':
     input_base_dir = os.getcwd()
 
 base_dir = input_base_dir.rstrip('/')
-os.mkdir(base_dir + '/var')
 log_file = base_dir + '/var/oddeye.log'
 pid_file = base_dir + '/var/oddeye.pid'
 tmpdir = base_dir + '/var/oddeye_tmp'
 location = input("Your servers location(Aka : us-east-1): ")
 cluster_name = input("Friendly name of your cluster: ")
 host_group = input("Grouping TAG of hosts: ")
-os.mkdir(tmpdir)
+
+if not os.path.exists(base_dir + '/var'):
+    os.mkdir(base_dir + '/var')
+if not os.path.exists(tmpdir):
+    os.mkdir(tmpdir)
 
 if run_user == '':
     uid = os.getuid()
