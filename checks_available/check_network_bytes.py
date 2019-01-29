@@ -11,7 +11,7 @@ rated = lib.getconfig.getparam('Network Stats', 'rated')
 
 
 class Check(lib.basecheck.CheckBase):
-    
+
     def precheck(self):
         try:
             ifaces = glob.glob("/sys/class/net/*")
@@ -31,7 +31,10 @@ class Check(lib.basecheck.CheckBase):
                 rx = int(rxb.read())
                 tx = int(txb.read())
 
-                if rx is not 0 or tx is not 0:
+                rx_last = self.last.return_last_value('network_rx_last', rx)
+                tx_last = self.last.return_last_value('network_tx_last', tx)
+
+                if rx > rx_last or tx > tx_last:
                     txname = 'bytes_tx'
                     rxname = 'bytes_rx'
                     if rated is True:
