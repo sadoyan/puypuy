@@ -4,8 +4,7 @@ import lib.puylogger
 import lib.pushdata
 from io import BytesIO
 
-
-def httpget(name, url, auth=None):
+def httpget(name, url, auth=None, headers=None):
     try:
         buffer = BytesIO()
         c = pycurl.Curl()
@@ -18,6 +17,8 @@ def httpget(name, url, auth=None):
         c.setopt(pycurl.NOSIGNAL, 5)
         if auth is not None:
             c.setopt(pycurl.USERPWD, auth)
+        if headers is not None:
+            c.setopt(pycurl.HTTPHEADER, [headers])
         c.perform()
         c.close()
         body = buffer.getvalue()
