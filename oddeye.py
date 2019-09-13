@@ -108,64 +108,44 @@ def rn(hast):
             lib.run_bash.run_shell_scripts()
             time.sleep(cron_interval)
 
-#------------------------------------------- #
+
 class App(daemon):
     def run(self):
         rn(1)
 
-# class App(daemon):
-#     def run(self):
-#         backends = ('OddEye', 'InfluxDB', 'KairosDB', 'OpenTSDB')
-#         self.hast = 1
-#         if tsdb_type in backends:
-#             def run_normal():
-#                 while True:
-#                     run_scripts()
-#                     if lib.puylogger.debug_log:
-#                         lib.puylogger.print_message(str(run_scripts))
-#                     if lib.puylogger.debug_log:
-#                         lib.puylogger.print_message(str(lib.run_bash.run_shell_scripts()))
-#                     if self.hast % 25 == 0:
-#                           gc.collect()
-#                           self.hast = 1
-#                     else:
-#                         self.hast += 1
-#                     time.sleep(cron_interval)
-#
-#             def run_cache():
-#                 while True:
-#                     upload_cache()
-#                     if lib.puylogger.debug_log:
-#                         lib.puylogger.print_message(str(upload_cache))
-#                     time.sleep(cron_interval)
-#
-#
-#             cache = threading.Thread(target=run_cache, name='Run Cache')
-#             cache.daemon = True
-#             cache.start()
-#
-#             run_normal()
-#
-#         else:
-#             while True:
-#                 run_scripts()
-#                 lib.run_bash.run_shell_scripts()
-#                 time.sleep(cron_interval)
+
+def check_pid():
+    try:
+        with open(pid_file) as f:
+            os.kill(int(f.read()), 0)
+    except OSError:
+        return False
+    else:
+        return True
+
+
+def remove_orphan():
+    if os.path.exists(pid_file):
+        os.remove(pid_file)
+        lib.puylogger.print_message('OE Agent is not running but pid file exists')
+        lib.puylogger.print_message('Removing orphaned pid file')
 
 
 if __name__ == "__main__":
         daemon = App(pid_file)
         if len(sys.argv) == 2:
             if 'start' == sys.argv[1]:
-                    daemon.start()
+                remove_orphan()
+                daemon.start()
             elif 'stop' == sys.argv[1]:
                     daemon.stop()
             elif 'systemd' == sys.argv[1]:
+                remove_orphan()
                 rn(1)
             elif 'restart' == sys.argv[1]:
                     daemon.restart()
             else:
-                    print ("Unknown command")
+                    print("Unknown command")
                     sys.exit(2)
             sys.exit(0)
         else:
