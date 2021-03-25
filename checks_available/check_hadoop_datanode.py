@@ -17,7 +17,8 @@ class Check(lib.basecheck.CheckBase):
         try:
             hadoop_datanode_stats = json.loads(lib.commonclient.httpget(__name__, hadoop_datanode_url))
             stats_keys = hadoop_datanode_stats['beans']
-            node_stack_keys = ('NonHeapMemoryUsage', 'HeapMemoryUsage', 'Capacity', 'DfsUsed', 'Remaining', 'OpenFileDescriptorCount')
+            node_stack_keys = ('NonHeapMemoryUsage', 'HeapMemoryUsage', 'Capacity', 'DfsUsed', 'Remaining', 'OpenFileDescriptorCount',
+                               'RpcAuthenticationFailures', 'RpcAuthenticationSuccesses', 'RpcAuthorizationFailures', 'RpcAuthorizationSuccesses')
             node_rated_keys = ('BytesRead', 'BytesWritten', 'TotalReadTime', 'TotalWriteTime')
             mon_values = {}
 

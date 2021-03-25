@@ -18,7 +18,8 @@ class Check(lib.basecheck.CheckBase):
             stats_keys = stats_json['beans']
             node_rated_keys = ('clusterRequests', 'GcTimeMillis')
             node_stuck_keys = ('GcCount', 'HeapMemoryUsage', 'numRegionServers', 'numDeadRegionServers',
-                               'ritOldestAge', 'ritCountOverThreshold', 'ritCount', 'averageLoad', 'numRegionServers', 'numDeadRegionServers')
+                               'ritOldestAge', 'ritCountOverThreshold', 'ritCount', 'averageLoad', 'numRegionServers', 'numDeadRegionServers',
+                               'authenticationSuccesses', 'authorizationFailures', 'authenticationFallbacks', 'authorizationSuccesses')
             exceptions = ('exceptions.RegionMovedException', 'exceptions.multiResponseTooLarge', 'exceptions.RegionTooBusyException',
                           'exceptions.FailedSanityCheckException', 'exceptions.UnknownScannerException',
                           'exceptions.OutOfOrderScannerNextException', 'exceptions')

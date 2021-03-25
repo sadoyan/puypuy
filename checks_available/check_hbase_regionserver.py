@@ -19,9 +19,10 @@ class Check(lib.basecheck.CheckBase):
             node_rated_keys = ('totalRequestCount', 'readRequestCount', 'writeRequestCount', 'Delete_num_ops', 'Mutate_num_ops', 'FlushTime_num_ops',
                                 'GcTimeMillis', 'compactedCellsCount', 'majorCompactedCellsCount', 'compactedCellsSize', 'majorCompactedCellsSize')
             node_stuck_keys = ('GcCount', 'HeapMemoryUsage', 'OpenFileDescriptorCount',
-                             'blockCacheSize', 'blockCacheExpressHitPercent', 'blockCountHitPercent',
-                             'slowAppendCount', 'slowGetCount', 'slowPutCount', 'slowIncrementCount', 'slowDeleteCount',
-                             'memStoreSize', 'regionCount', 'storeFileSize', 'storeFileCount', 'hlogFileCount', 'hlogFileSize', 'percentFilesLocal', 'blockCountHitPercent')
+                               'blockCacheSize', 'blockCacheExpressHitPercent', 'blockCountHitPercent',
+                               'slowAppendCount', 'slowGetCount', 'slowPutCount', 'slowIncrementCount', 'slowDeleteCount',
+                               'memStoreSize', 'regionCount', 'storeFileSize', 'storeFileCount', 'hlogFileCount', 'hlogFileSize', 'percentFilesLocal', 'blockCountHitPercent',
+                               'authenticationFallbacks', 'authorizationSuccesses', 'authenticationFailures')
             zero_learn_keys = ('blockCacheFreeSize', 'blockCacheCount')
             zero_learn_keys_rated = ('blockCacheHitCount', 'blockCacheMissCount', 'blockCacheEvictionCount')
             hedged_reads = ('hedgedReads', 'hedgedReadWins')

@@ -18,7 +18,8 @@ class Check(lib.basecheck.CheckBase):
             node_stack_keys = ('CapacityTotal', 'CapacityUsed', 'BlocksTotal', 'MissingBlocks', 'CorruptBlocks', 'UnderReplicatedBlocks',
                                'PendingReplicationBlocks', 'ScheduledReplicationBlocks', 'BlockCapacity',
                                'NonDfsUsedSpace', 'CapacityRemaining', 'PercentRemaining', 'OpenFileDescriptorCount', 'NumStaleDataNodes', 'NumStaleStorages',
-                               'NumLiveDataNodes', 'NumDeadDataNodes', 'NumDecomLiveDataNodes', 'NumDecomDeadDataNodes', 'NumDecommissioningDataNodes')
+                               'NumLiveDataNodes', 'NumDeadDataNodes', 'NumDecomLiveDataNodes', 'NumDecomDeadDataNodes', 'NumDecommissioningDataNodes',
+                               'RpcAuthenticationFailures', 'RpcAuthenticationSuccesses', 'RpcAuthorizationFailures', 'RpcAuthorizationSuccesses')
             node_rated_keys = ('CreateFileOps', 'GetBlockLocations', 'FilesRenamed', 'GetListingOps', 'DeleteFileOps', 'FilesDeleted',
                                'FileInfoOps', 'AddBlockOps', 'TransactionsNumOps', 'ReceivedBytes', 'SentBytes')
             mon_values = {}
