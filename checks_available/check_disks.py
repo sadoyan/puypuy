@@ -58,30 +58,34 @@ class Check(lib.basecheck.CheckBase):
                 free = st.f_bavail * st.f_frsize
                 total = st.f_blocks * st.f_frsize
                 used = (st.f_blocks - st.f_bfree) * st.f_frsize
-                du = '{:.2f}'.format(used * 100 / total)
-                return total, used, free, du
+                if used != 0 and total != 0:
+                    du = '{:.2f}'.format(used * 100 / total)
+                    return total, used, free, du
+                else:
+                    return None
 
             for u in d:
                 mrtrics = disk_usage(u)
-                if u == '/':
-                    name = 'rootfs'
-                else:
-                    name = u.strip('/').replace('/', '_')
-                if static_alerts:
-                    if warn_percent <= float(mrtrics[3]) < crit_percent:
-                        err_type = 'WARNING'
-                        health_value = 8
-                        health_message = err_type + ': Storage usage of ' + u + ' is at ' + str(mrtrics[3]) + ' percent of available  space'
-                        self.jsondata.send_special("Disk-Usage-" + name, self.timestamp, health_value, health_message, err_type, -self.error_handler)
-                    if float(mrtrics[3]) >= crit_percent:
-                        err_type = 'ERROR'
-                        health_value = 16
-                        health_message = err_type + ': Storage usage of ' + u + ' is at ' + str(mrtrics[3]) + ' percent of available  space'
-                        self.jsondata.send_special("Disk-Usage-" + name, self.timestamp, health_value, health_message, err_type, -self.error_handler)
+                if mrtrics is not None:
+                    if u == '/':
+                        name = 'rootfs'
+                    else:
+                        name = u.strip('/').replace('/', '_')
+                    if static_alerts:
+                        if warn_percent <= float(mrtrics[3]) < crit_percent:
+                            err_type = 'WARNING'
+                            health_value = 8
+                            health_message = err_type + ': Storage usage of ' + u + ' is at ' + str(mrtrics[3]) + ' percent of available  space'
+                            self.jsondata.send_special("Disk-Usage-" + name, self.timestamp, health_value, health_message, err_type, -self.error_handler)
+                        if float(mrtrics[3]) >= crit_percent:
+                            err_type = 'ERROR'
+                            health_value = 16
+                            health_message = err_type + ': Storage usage of ' + u + ' is at ' + str(mrtrics[3]) + ' percent of available  space'
+                            self.jsondata.send_special("Disk-Usage-" + name, self.timestamp, health_value, health_message, err_type, -self.error_handler)
 
-                self.local_vars.append({'name': 'drive_bytes_used', 'timestamp': self.timestamp, 'value': mrtrics[1], 'reaction': reaction , 'extra_tag':{'mountpoint': name}})
-                self.local_vars.append({'name': 'drive_bytes_available', 'timestamp': self.timestamp, 'value': mrtrics[2], 'reaction': reaction, 'extra_tag': {'mountpoint': name}})
-                self.local_vars.append({'name': 'drive_percent_used','timestamp': self.timestamp, 'value': mrtrics[3], 'chart_type': 'Percent', 'extra_tag': {'mountpoint': name}})
+                    self.local_vars.append({'name': 'drive_bytes_used', 'timestamp': self.timestamp, 'value': mrtrics[1], 'reaction': reaction , 'extra_tag':{'mountpoint': name}})
+                    self.local_vars.append({'name': 'drive_bytes_available', 'timestamp': self.timestamp, 'value': mrtrics[2], 'reaction': reaction, 'extra_tag': {'mountpoint': name}})
+                    self.local_vars.append({'name': 'drive_percent_used','timestamp': self.timestamp, 'value': mrtrics[3], 'chart_type': 'Percent', 'extra_tag': {'mountpoint': name}})
 
 
             proc_stats = open('/proc/diskstats')
