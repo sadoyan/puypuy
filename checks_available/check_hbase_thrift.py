@@ -41,7 +41,8 @@ class Check(lib.basecheck.CheckBase):
                                  'PauseTimeWithoutGc_90th_percentile', 'PauseTimeWithoutGc_99th_percentile', 'callQueueLen', 'TimeInQueue_num_ops')
                     hrmetrics_rated = ('BatchMutate_num_ops', 'ThriftCall_num_ops', 'SlowThriftCall_num_ops', 'BatchGet_num_ops', )
                     for hrmetric in hrmetrics:
-                        self.local_vars.append({'name': 'hthrift_' + hrmetric.lower(), 'timestamp': self.timestamp, 'value': stats_keys[index][hrmetric], 'check_type': check_type, 'extra_tag': {'thrift_queue': 'one'}})
+                        if hrmetric in stats_keys[index].keys():
+                            self.local_vars.append({'name': 'hthrift_' + hrmetric.lower(), 'timestamp': self.timestamp, 'value': stats_keys[index][hrmetric], 'check_type': check_type, 'extra_tag': {'thrift_queue': 'one'}})
 
                     for hrmetric_rated in hrmetrics_rated:
                         bolor = self.rate.record_value_rate('hthrift_one' + hrmetric_rated, stats_keys[index][hrmetric_rated], self.timestamp)
@@ -52,7 +53,8 @@ class Check(lib.basecheck.CheckBase):
                                  'PauseTimeWithoutGc_90th_percentile', 'PauseTimeWithoutGc_99th_percentile', 'callQueueLen', 'TimeInQueue_num_ops')
                     hrmetrics_rated = ('BatchMutate_num_ops', 'ThriftCall_num_ops', 'SlowThriftCall_num_ops', 'BatchGet_num_ops', )
                     for hrmetric in hrmetrics:
-                        self.local_vars.append({'name': 'hthrift_' + hrmetric.lower(), 'timestamp': self.timestamp, 'value': stats_keys[index][hrmetric], 'check_type': check_type, 'extra_tag': {'thrift_queue': 'two'}})
+                        if hrmetric in stats_keys[index].keys():
+                            self.local_vars.append({'name': 'hthrift_' + hrmetric.lower(), 'timestamp': self.timestamp, 'value': stats_keys[index][hrmetric], 'check_type': check_type, 'extra_tag': {'thrift_queue': 'two'}})
 
                     for hrmetric_rated in hrmetrics_rated:
                         bolor = self.rate.record_value_rate('hthrift_two' + hrmetric_rated, stats_keys[index][hrmetric_rated], self.timestamp)
