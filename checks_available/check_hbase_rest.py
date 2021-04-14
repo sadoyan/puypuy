@@ -41,10 +41,12 @@ class Check(lib.basecheck.CheckBase):
                     hrmetrics_rated = ('requests', 'successfulDelete', 'successfulGet', 'successfulPut', 'successfulScanCount',
                                        'failedDelete', 'failedGet', 'failedPut', 'failedScanCount')
                     for hrmetric in hrmetrics:
-                        self.local_vars.append({'name': 'hrest_' + hrmetric.lower(), 'timestamp': self.timestamp, 'value': stats_keys[index][hrmetric], 'check_type': check_type})
+                        if hrmetric in stats_keys[index].keys():
+                            self.local_vars.append({'name': 'hrest_' + hrmetric.lower(), 'timestamp': self.timestamp, 'value': stats_keys[index][hrmetric], 'check_type': check_type})
                     for hrmetric_rated in hrmetrics_rated:
-                        bolor = self.rate.record_value_rate('hrest_' + hrmetric_rated, stats_keys[index][hrmetric_rated], self.timestamp)
-                        self.local_vars.append({'name': 'hrest_' + hrmetric_rated.lower(), 'timestamp': self.timestamp, 'value': bolor, 'check_type': check_type, 'chart_type': 'Rate'})
+                        if hrmetric in stats_keys[index].keys():
+                            bolor = self.rate.record_value_rate('hrest_' + hrmetric_rated, stats_keys[index][hrmetric_rated], self.timestamp)
+                            self.local_vars.append({'name': 'hrest_' + hrmetric_rated.lower(), 'timestamp': self.timestamp, 'value': bolor, 'check_type': check_type, 'chart_type': 'Rate'})
         except Exception as e:
             lib.puylogger.print_message(__name__ + ' Error : ' + str(e))
             pass
