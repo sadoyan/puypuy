@@ -12,8 +12,8 @@ import ast
 
 
 try:
-    import MySQLdb
-    mysqldriver = MySQLdb
+    import mysql.connector
+    mysqldriver = mysql.connector
     lib.puylogger.print_message(__name__ + ' Using MySQLdb to connect to MySQL server')
 except:
     try:
