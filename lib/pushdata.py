@@ -19,8 +19,14 @@ tsdb_type = lib.getconfig.getparam('TSDB', 'tsdtype')
 tmpdir = lib.getconfig.getparam('SelfConfig', 'tmpdir')
 log_file = lib.getconfig.getparam('SelfConfig', 'log_file')
 location = lib.getconfig.getparam('SelfConfig', 'location')
+short_names = lib.getconfig.getparam('SelfConfig', 'shorthostname')
 
-hostname = socket.getfqdn()
+
+if short_names.lower() == 'yes':
+    hostname = socket.gethostname()
+else:
+    hostname = socket.getfqdn()
+
 c = pycurl.Curl()
 
 extra_tags = ('device', 'container')
