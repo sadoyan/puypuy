@@ -15,6 +15,9 @@ if tsdb_type == 'InfluxDB':
     tsdb_url = lib.pushdata.influx_url
     if lib.pushdata.curl_auth is True:
         c.setopt(pycurl.USERPWD, lib.pushdata.influx_auth)
+if tsdb_type == 'InfluxDB2':
+    tsdb_url = lib.pushdata.influx2_url
+    c.setopt(pycurl.HTTPHEADER, ['Authorization: Token ' + lib.pushdata.influx2_token])
 if lib.pushdata.tsd_rest is True:
     tsdb_url = lib.pushdata.tsdb_url
     if lib.pushdata.curl_auth is True:

@@ -57,6 +57,18 @@ if tsdb_type == 'InfluxDB':
 else:
     tsd_influx = False
 
+if tsdb_type == 'InfluxDB2':
+    tsd_influx2 = True
+    influx2_server = lib.getconfig.getparam('TSDB', 'address')
+    influx2_db = lib.getconfig.getparam('TSDB', 'bucket')
+    influx2_org = lib.getconfig.getparam('TSDB', 'organization')
+    influx2_token = lib.getconfig.getparam('TSDB', 'token')
+    influx2_url = influx2_server + '/api/v2/write?org=' + influx2_org + '&bucket=' + influx2_db
+else:
+    tsd_influx2 = False
+
+
+
 if tsdb_type == 'OddEye':
     tsdb_url = lib.getconfig.getparam('TSDB', 'url')
     oddeye_uuid = lib.getconfig.getparam('TSDB', 'uuid')
@@ -99,7 +111,7 @@ class JonSon(object):
                 for a in b['extra_tag']:
                     s = s + '.' + str(b['extra_tag'][a])
             self.data.append((s + "." + b["name"], (b["timestamp"], b["value"])))
-        elif tsdb_type == 'InfluxDB':
+        elif tsdb_type == 'InfluxDB' or tsdb_type == 'InfluxDB2':
             nanotime = lambda: int(round(time.time() * 1000000000))
             str_nano = str(nanotime())
             if type(b["value"]) is int:
@@ -149,7 +161,7 @@ class JonSon(object):
             except:
                 lib.puylogger.print_message('Recreating data in except block')
                 self.data = []
-        if tsd_influx is True:
+        if tsd_influx is True or tsd_influx2 is True:
             try:
                 self.data = []
             except:
@@ -272,6 +284,13 @@ class JonSon(object):
             if curl_auth is True:
                 c.setopt(pycurl.USERPWD, influx_auth)
             self.httt_set_opt(influx_url, line_data)
+            self.upload_it(line_data)
+            if lib.puylogger.debug_log:
+                lib.puylogger.print_message('\n' + line_data)
+        if tsd_influx2 is True:
+            line_data = '%s' % ''.join(map(str, self.data))
+            self.httt_set_opt(influx2_url, line_data)
+            c.setopt(pycurl.HTTPHEADER, ['Authorization: Token ' + influx2_token])
             self.upload_it(line_data)
             if lib.puylogger.debug_log:
                 lib.puylogger.print_message('\n' + line_data)

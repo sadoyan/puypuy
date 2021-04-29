@@ -75,7 +75,7 @@ def upload_cache():
 #------------------------------------------- #
 
 def rn(hast):
-    backends = ('OddEye', 'InfluxDB', 'KairosDB', 'OpenTSDB')
+    backends = ('OddEye', 'InfluxDB', 'InfluxDB2', 'KairosDB', 'OpenTSDB')
 
     if tsdb_type in backends:
         def run_normal(hast):
