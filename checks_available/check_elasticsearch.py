@@ -8,9 +8,16 @@ import json
 
 host = lib.getconfig.getparam('ElasticSearch', 'host')
 stats = lib.getconfig.getparam('ElasticSearch', 'stats')
+tpstats = lib.getconfig.getparam('ElasticSearch', 'threadpoolstats')
 elastic_url = host + stats
 check_type = 'elasticsearch'
 reaction = -3
+
+if tpstats.lower() == 'yes':
+    poolstats = True
+else:
+    poolstats = False
+
 
 class Check(lib.basecheck.CheckBase):
 
@@ -126,6 +133,14 @@ class Check(lib.basecheck.CheckBase):
                     self.local_vars.append({'name': key, 'timestamp': self.timestamp, 'value': value, 'check_type': check_type, 'reaction': reaction})
                 else:
                     self.local_vars.append({'name': key, 'timestamp': self.timestamp, 'value': value, 'check_type': check_type})
+            if poolstats:
+                for tp in stats_json['nodes'][node_keys]['thread_pool'].keys():
+                    for name in ('active', 'rejected', 'queue'):
+                        if name in stats_json['nodes'][node_keys]['thread_pool'][tp].keys():
+                            self.local_vars.append({'name': 'elasticsearch_thread_pool_'+ tp, 'timestamp': self.timestamp,
+                                                    'value': stats_json['nodes'][node_keys]['thread_pool'][tp][name],
+                                                    'reaction': -3, 'extra_tag': {'status': name}})
+
         except Exception as e:
             lib.puylogger.print_message(__name__ + ' Error : ' + str(e))
             pass
