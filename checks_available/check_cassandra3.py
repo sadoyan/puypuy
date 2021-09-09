@@ -69,7 +69,7 @@ class Check(lib.basecheck.CheckBase):
 
             for itme in data_dict['value'].items():
                 nme = itme[1]['Name'].replace(' Generation', '').replace('ConcurrentMarkSweep', 'cms').lower().replace(' ', '_')
-                if 'LastGcInfo' in itme[1]:
+                if 'LastGcInfo' in itme[1] and itme[1]['LastGcInfo'] is not None:
                     vle = itme[1]['LastGcInfo']['duration']
                 else:
                     vle = 0
