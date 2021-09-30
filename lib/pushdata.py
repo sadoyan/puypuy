@@ -182,6 +182,8 @@ class JonSon(object):
         c.setopt(pycurl.VERBOSE, 0)
         c.setopt(pycurl.TIMEOUT, 3)
         c.setopt(pycurl.NOSIGNAL, 5)
+        c.setopt(pycurl.SSL_VERIFYPEER, 0)
+        c.setopt(pycurl.SSL_VERIFYHOST, 0)
         c.setopt(pycurl.USERAGENT, 'PuyPuy v.02')
         c.setopt(pycurl.ENCODING, "gzip,deflate")
 
@@ -192,6 +194,8 @@ class JonSon(object):
 
         if tsd_oddeye is True:
             c.setopt(c.WRITEDATA, buffer)
+            c.setopt(pycurl.SSL_VERIFYPEER, 0)
+            c.setopt(pycurl.SSL_VERIFYHOST, 0)
         else:
             c.setopt(pycurl.WRITEFUNCTION, lambda x: None)
 
