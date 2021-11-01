@@ -20,10 +20,10 @@ logger.setLevel(logging.INFO)
 logger.propagate = False
 
 def print_message(*args):
-    mssg = args[0]
+    mssg = str(args[0])
     if len(args) >= 1:
         for arg in args[1:]:
-            mssg = mssg + " " + str(arg)
+            mssg = str(mssg) + " " + str(arg)
     logger.info(str(time.strftime("[%F %H %M:%S] ")) + mssg)
 
 def print_raw_message(message):
