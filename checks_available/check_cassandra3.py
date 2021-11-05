@@ -30,9 +30,10 @@ class Check(lib.basecheck.CheckBase):
             latency_metrics = ('Read', 'ViewWrite', 'RangeSlice', 'CASRead', 'CASWrite', 'Write')
 
             for latency_metric in latency_metrics:
-                mon_value = cassa_latency['value']['org.apache.cassandra.metrics:name=Latency,scope=' + latency_metric + ',type=ClientRequest']['OneMinuteRate']
+                mon_value = cassa_latency['value']['org.apache.cassandra.metrics:name=Latency,scope=' + latency_metric + ',type=ClientRequest']['Mean']
                 mon_name = 'cassa_latency_' + str(latency_metric).lower()
-                self.local_vars.append({'name': mon_name, 'timestamp': self.timestamp, 'value': mon_value, 'check_type': check_type})
+                if mon_value:
+                    self.local_vars.append({'name': mon_name, 'timestamp': self.timestamp, 'value': mon_value, 'check_type': check_type})
 
             cache_metrics = ('Hits,scope=KeyCache', 'Hits,scope=RowCache', 'Requests,scope=KeyCache', 'Requests,scope=RowCache')
             for cache_metric in cache_metrics:
