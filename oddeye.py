@@ -19,6 +19,10 @@ log_file = lib.getconfig.getparam('SelfConfig', 'log_file')
 pid_file = lib.getconfig.getparam('SelfConfig', 'pid_file')
 tsdb_type = lib.getconfig.getparam('TSDB', 'tsdtype')
 
+tmpdir = lib.getconfig.getparam('SelfConfig', 'tmpdir')
+if not os.path.exists(tmpdir):
+    os.mkdir(tmpdir)
+
 library_list = []
 
 os.chdir("checks_enabled")
