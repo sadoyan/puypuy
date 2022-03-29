@@ -135,11 +135,12 @@ class Check(lib.basecheck.CheckBase):
                     self.local_vars.append({'name': key, 'timestamp': self.timestamp, 'value': value, 'check_type': check_type})
             if poolstats:
                 for tp in stats_json['nodes'][node_keys]['thread_pool'].keys():
-                    for name in ('active', 'rejected', 'queue'):
+                    for name in ('active', 'queue'):
                         if name in stats_json['nodes'][node_keys]['thread_pool'][tp].keys():
-                            self.local_vars.append({'name': 'elasticsearch_thread_pool_'+ tp, 'timestamp': self.timestamp,
-                                                    'value': stats_json['nodes'][node_keys]['thread_pool'][tp][name],
-                                                    'reaction': -3, 'extra_tag': {'status': name}})
+                            self.local_vars.append(
+                                {'name': 'elasticsearch_thread_pool', 'timestamp': self.timestamp,
+                                 'value': stats_json['nodes'][node_keys]['thread_pool'][tp][name], 'check_type': name,
+                                 'reaction': -3, 'extra_tag': {'pool': tp}})
 
         except Exception as e:
             lib.puylogger.print_message(__name__ + ' Error : ' + str(e))
