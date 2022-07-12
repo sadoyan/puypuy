@@ -14,6 +14,7 @@ check_type = 'activemq'
 reaction = -3
 
 
+
 class Check(lib.basecheck.CheckBase):
 
     def precheck(self):

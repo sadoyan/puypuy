@@ -10,7 +10,7 @@ check_type = 'scylladb'
 reaction = 0
 
 greps = [
-        'scylla_node_operation_mode', 'scylla_reactor_utilization', 'node_filesystem_size_bytes', 'scylla_transport_requests_served',
+        'scylla_node_operation_mode', 'scylla_reactor_utilization', 'scylla_transport_requests_served',
         'scylla_storage_proxy_coordinator_write_latency_count', 'scylla_storage_proxy_coordinator_write_latency_sum',
         'scylla_storage_proxy_coordinator_write_timeouts', 'scylla_storage_proxy_coordinator_read_latency_count',
         'scylla_storage_proxy_coordinator_read_latency_sum', 'scylla_storage_proxy_coordinator_read_timeouts', 'scylla_cache_row_hits', 'scylla_cache_row_misses',

@@ -20,9 +20,6 @@ class Check(lib.basecheck.CheckBase):
             basestats = ('consul.runtime.alloc_bytes', 'consul.runtime.free_count', 'consul.runtime.heap_objects', 'consul.runtime.malloc_count'
                          'consul.runtime.num_goroutines', 'consul.runtime.sys_bytes', 'consul.runtime.total_gc_pause_ns', 'consul.runtime.total_gc_runs', 'consul.session_ttl.active')
 
-            rates = ('consul.consul.job_summary.queued', 'consul.consul.job_summary.complete', 'consul.consul.job_summary.failed',
-                           'consul.consul.job_summary.running', 'consul.consul.job_summary.starting', 'consul.consul.job_summary.lost')
-
             for index in range(0, len(stats_json['Gauges'])):
                 if stats_json['Gauges'][index]['Name'] in basestats:
                     self.local_vars.append({'name': stats_json['Gauges'][index]['Name'].replace('.', '_').replace('-', '_').lower(), 'timestamp': self.timestamp, 'value': stats_json['Gauges'][index]['Value'], 'check_type': check_type})

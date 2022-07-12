@@ -37,6 +37,9 @@ def upload_files(myfile):
             c.setopt(pycurl.WRITEFUNCTION, lambda x: None)
             c.setopt(pycurl.USERAGENT, 'Cacher PuyPuy v.0.2')
             c.setopt(pycurl.POSTFIELDS, content)
+            c.setopt(pycurl.SSL_VERIFYPEER, 0)
+            c.setopt(pycurl.SSL_VERIFYHOST, 0)
+
             c.perform()
             try:
                 response_code = int(c.getinfo(pycurl.RESPONSE_CODE))
@@ -44,7 +47,7 @@ def upload_files(myfile):
                 pass
             if response_code in http_response_codes:
                 os.remove(filepath)
-                lib.puylogger.print_message('Cache Uploader ' + filepath + 'cached file is processed')
+                lib.puylogger.print_message('Cache Uploader: ' + filepath + ' cached file is processed')
                 return True
             else:
                 return False

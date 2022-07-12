@@ -20,6 +20,7 @@ class CheckBase:
         self.location = lib.getconfig.getparam('SelfConfig', 'location')
         self.error_handler = int(lib.getconfig.getparam('SelfConfig', 'error_handler'))
         self.timestamp = int(datetime.datetime.now().strftime("%s"))
+        # self.debug_info = lib.getconfig.getparam('SelfConfig', 'print_info')
 
     def info(self):
         for t in self.local_vars:

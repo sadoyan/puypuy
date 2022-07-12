@@ -9,7 +9,9 @@ import lib.run_bash
 import lib.pushdata
 import lib.puylogger
 import lib.getconfig
+import lib.nag
 import gc
+import lib.webserver
 
 sys.path.append(os.path.dirname(os.path.realpath("__file__"))+'/checks_enabled')
 sys.path.append(os.path.dirname(os.path.realpath("__file__"))+'/lib')
@@ -22,6 +24,13 @@ tsdb_type = lib.getconfig.getparam('TSDB', 'tsdtype')
 tmpdir = lib.getconfig.getparam('SelfConfig', 'tmpdir')
 if not os.path.exists(tmpdir):
     os.mkdir(tmpdir)
+
+ws = lib.getconfig.getparam('WebServer', 'webserver').lower()
+
+if ws == 'yes' or tsdb_type == "Prometheus":
+    runweb = True
+else:
+    runweb = False
 
 library_list = []
 
@@ -67,24 +76,25 @@ def run_scripts():
             jsondata.put_json()
             time_elapsed2 = '{:.9f}'.format(time.time() - start_gtime) + ' seconds '
             lib.puylogger.print_message('Spent ' + time_elapsed2 + 'to complete interation')
+            return True
         except Exception as e:
             lib.puylogger.print_message(str(e))
     else:
         lib.puylogger.print_message(str('Please enable at least on python module'))
+        return False
 
 def upload_cache():
     lib.upload_cached.cache_uploader()
 
 
-#------------------------------------------- #
-
 def rn(hast):
-    backends = ('OddEye', 'InfluxDB', 'InfluxDB2', 'KairosDB', 'OpenTSDB')
-
+    backends = ('OddEye', 'InfluxDB', 'InfluxDB2', 'KairosDB', 'OpenTSDB', 'Prometheus')
     if tsdb_type in backends:
         def run_normal(hast):
             while True:
-                run_scripts()
+                run = run_scripts()
+                if not run:
+                    time.sleep(86400)
                 if lib.puylogger.debug_log:
                     lib.puylogger.print_message(str(run_scripts))
                 if lib.puylogger.debug_log:
@@ -105,6 +115,12 @@ def rn(hast):
         cache = threading.Thread(target=run_cache, name='Run Cache')
         cache.daemon = True
         cache.start()
+
+        if runweb:
+            web = threading.Thread(target=lib.webserver.run_web, name='Run Web')
+            web.daemon = True
+            web.start()
+
         run_normal(hast)
     else:
         while True:
@@ -134,24 +150,23 @@ def remove_orphan():
         lib.puylogger.print_message('OE Agent is not running but pid file exists')
         lib.puylogger.print_message('Removing orphaned pid file')
 
-
 if __name__ == "__main__":
-        daemon = App(pid_file)
-        if len(sys.argv) == 2:
-            if 'start' == sys.argv[1]:
-                remove_orphan()
-                daemon.start()
-            elif 'stop' == sys.argv[1]:
-                daemon.stop()
-            elif 'systemd' == sys.argv[1]:
-                remove_orphan()
-                rn(1)
-            elif 'restart' == sys.argv[1]:
-                daemon.restart()
-            else:
-                print("Unknown command")
-                sys.exit(2)
-            sys.exit(0)
+    daemon = App(pid_file)
+    if len(sys.argv) == 2:
+        if 'start' == sys.argv[1]:
+            remove_orphan()
+            daemon.start()
+        elif 'stop' == sys.argv[1]:
+            daemon.stop()
+        elif 'systemd' == sys.argv[1]:
+            remove_orphan()
+            rn(1)
+        elif 'restart' == sys.argv[1]:
+            daemon.restart()
         else:
-                print(("usage: %s start|stop|restart" % sys.argv[0]))
-                sys.exit(2)
+            print("Unknown command")
+            sys.exit(2)
+        sys.exit(0)
+    else:
+            print(("usage: %s start|stop|restart" % sys.argv[0]))
+            sys.exit(2)

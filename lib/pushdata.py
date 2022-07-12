@@ -11,6 +11,10 @@ import uuid
 import lib.puylogger
 import lib.getconfig
 from io import BytesIO
+from queue import Queue
+
+promq = Queue(maxsize=1)
+
 
 cluster_name = lib.getconfig.getparam('SelfConfig', 'cluster_name')
 host_group = lib.getconfig.getparam('SelfConfig', 'host_group')
@@ -37,6 +41,12 @@ if (tsdb_type == 'KairosDB' or tsdb_type == 'OpenTSDB'):
     tsd_rest = True
 else:
     tsd_rest = False
+
+
+if tsdb_type == 'Prometheus':
+    tsd_prometheus = True
+else:
+    tsd_prometheus = False
 
 if tsdb_type == 'Carbon':
     tsd_carbon = True
@@ -98,13 +108,28 @@ class JonSon(object):
                     local_data["tags"][a] = b['extra_tag'][a]
             self.data['metric'].append(local_data )
         elif tsdb_type == 'OpenTSDB':
-            local_data = {"metric": b["name"], "timestamp": b["timestamp"], "value": b["value"], "tags": {"host": tag_hostname, "type": tag_type, "cluster": cluster_name, "group": host_group, "location": location}}
+            local_data = {"metric": b["name"], "timestamp": b["timestamp"], "value": b["value"],
+                          "tags": {"host": tag_hostname, "type": tag_type, "cluster": cluster_name, "group": host_group, "location": location}
+                         }
             if 'extra_tag' in b:
                 for a in b['extra_tag']:
                     local_data["tags"][a] = b['extra_tag'][a]
             self.data['metric'].append(local_data)
-        elif tsdb_type == 'BlueFlood':
-            raise NotImplementedError('BlueFlood is not supported yet')
+
+
+        elif tsd_prometheus:
+            name = b["name"]
+            basic_tags = '{' + 'host=' + '"' + tag_hostname + '"' + ",cluster=" + '"'+ cluster_name + '"' + ",group=" + '"' + host_group + '"' + ",location=" + '"' + location + '"' +'}'
+            if 'extra_tag' in b:
+                basic_tags = basic_tags.replace('}', '')
+                for k, v in b['extra_tag'].items():
+                    basic_tags = basic_tags + ',' + k + '=' +  '"' + v + '"'
+                basic_tags = basic_tags + '}'
+
+            self.local_data =name+basic_tags + ' ' + str(b['value'])
+            self.data.append(self.local_data)
+
+
         elif tsdb_type == 'Carbon':
             s = cluster_name + '.' + host_group + '.' + path + '.' + location + '.' + tag_type
             if 'extra_tag' in b:
@@ -167,6 +192,8 @@ class JonSon(object):
             except:
                 lib.puylogger.print_message('Recreating data in except block')
                 self.data = []
+        if tsd_prometheus is True:
+            self.data = []
         if tsd_oddeye is True:
             try:
                 self.data = {'metric': []}
@@ -292,12 +319,22 @@ class JonSon(object):
             if lib.puylogger.debug_log:
                 lib.puylogger.print_message('\n' + line_data)
         if tsd_influx2 is True:
-            line_data = '%s' % ''.join(map(str, self.data))
+            line_data = '%s' % '\n'.join(map(str, self.data))
             self.httt_set_opt(influx2_url, line_data)
             c.setopt(pycurl.HTTPHEADER, ['Authorization: Token ' + influx2_token])
             self.upload_it(line_data)
             if lib.puylogger.debug_log:
                 lib.puylogger.print_message('\n' + line_data)
+        if tsd_prometheus is True:
+            # ln = "# HELP Metrics provided by universal metrics collector PuyPuy."
+            # ln  = ln + '\n' + '# TYPE refer to documentation at https://oddeye.co/documentation/'
+            # line_data = ln + '\n' + '%s' % '\n'.join(map(str, self.data))
+            line_data = '%s' % '\n'.join(map(str, self.data))
+            if promq.qsize() == 0:
+                promq.put(line_data)
+            else:
+                promq.get()
+                promq.put(line_data)
 
 # ------------------------------------------------------------------------------- #
     def send_special(self, module, timestamp, value, error_msg, mytype, reaction=0, runscripts=True):
