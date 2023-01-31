@@ -13,7 +13,7 @@ def run_nag(name):
     try:
         input = json.loads(name)
     except Exception as e:
-        print(e)
+        lib.puylogger.print_message(str(e))
         return e
     if len(input) == 1:
         for key, val in input.items() :
@@ -28,7 +28,7 @@ def run_nag(name):
                 (output, err) = p.communicate()
                 exit_code = p.wait()
                 health_message = output.decode("utf-8").replace('\n', '')
-
+                lib.puylogger.print_message("Nagios:", health_message)
                 if exit_code == 0:
                     return json.dumps({'OK': health_message})
                 if exit_code == 1:
@@ -36,5 +36,5 @@ def run_nag(name):
                 else:
                     return json.dumps({'CRITICAL': health_message})
             except Exception as e:
-                print(e)
+                lib.puylogger.print_message(str(e))
                 return ("Somethinbg is worry")

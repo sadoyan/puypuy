@@ -15,7 +15,6 @@ from queue import Queue
 
 promq = Queue(maxsize=1)
 
-
 cluster_name = lib.getconfig.getparam('SelfConfig', 'cluster_name')
 host_group = lib.getconfig.getparam('SelfConfig', 'host_group')
 maxcache = int(lib.getconfig.getparam('SelfConfig', 'max_cache'))
@@ -34,14 +33,14 @@ else:
 c = pycurl.Curl()
 
 extra_tags = ('device', 'container')
-if (tsdb_type == 'KairosDB' or tsdb_type == 'OpenTSDB'):
+
+if tsdb_type == 'KairosDB' or tsdb_type == 'OpenTSDB':
     tsdb_url = lib.getconfig.getparam('TSDB', 'address') + lib.getconfig.getparam('TSDB', 'datapoints')
     tsdb_auth = lib.getconfig.getparam('TSDB', 'user') + ':' + lib.getconfig.getparam('TSDB', 'pass')
     curl_auth = bool(lib.getconfig.getparam('TSDB', 'auth'))
     tsd_rest = True
 else:
     tsd_rest = False
-
 
 if tsdb_type == 'Prometheus':
     tsd_prometheus = True
@@ -77,29 +76,27 @@ if tsdb_type == 'InfluxDB2':
 else:
     tsd_influx2 = False
 
+# if tsdb_type == 'OddEye':
+#     tsdb_url = lib.getconfig.getparam('TSDB', 'url')
+#     oddeye_uuid = lib.getconfig.getparam('TSDB', 'uuid')
+#     tsd_oddeye = True
+#     error_handler = int(lib.getconfig.getparam('SelfConfig', 'error_handler'))
+#     negative_handler = error_handler * -1
+#     sandbox = bool(lib.getconfig.getparam('TSDB', 'sandbox'))
+#     if sandbox is True:
+#         barlus_style = 'UUID=' + oddeye_uuid + '&sandbox=true&data='
+#     else:
+#         barlus_style = 'UUID=' + oddeye_uuid + '&data='
+# else:
+#     tsd_oddeye = False
 
-
-if tsdb_type == 'OddEye':
-    tsdb_url = lib.getconfig.getparam('TSDB', 'url')
-    oddeye_uuid = lib.getconfig.getparam('TSDB', 'uuid')
-    tsd_oddeye = True
-    error_handler = int(lib.getconfig.getparam('SelfConfig', 'error_handler'))
-    negative_handler = error_handler * -1
-    sandbox = bool(lib.getconfig.getparam('TSDB', 'sandbox'))
-    if sandbox is True:
-        barlus_style = 'UUID=' + oddeye_uuid + '&sandbox=true&data='
-    else:
-        barlus_style = 'UUID=' + oddeye_uuid + '&data='
-else:
-    tsd_oddeye = False
-
-
+prometheus_types = {"gauge", "counter", "histogram", "summary"}
 class JonSon(object):
     def gen_data_json(self, b, tag_hostname, cluster_name):
         if 'check_type' in b:
             tag_type = b['check_type']
         else:
-            tag_type = 'None'
+            tag_type = 'untyped'
 
         if tsdb_type == 'KairosDB':
             local_data = {"name": b["name"], "timestamp": b["timestamp"] * 1000, "value": b["value"], "tags": {"host": tag_hostname, "type": tag_type, "cluster": cluster_name, "group": host_group, "location": location}}
@@ -115,21 +112,23 @@ class JonSon(object):
                 for a in b['extra_tag']:
                     local_data["tags"][a] = b['extra_tag'][a]
             self.data['metric'].append(local_data)
-
-
-        elif tsd_prometheus:
+        elif tsdb_type == 'Prometheus':
             name = b["name"]
-            basic_tags = '{' + 'host=' + '"' + tag_hostname + '"' + ",cluster=" + '"'+ cluster_name + '"' + ",group=" + '"' + host_group + '"' + ",location=" + '"' + location + '"' +'}'
+            # if tag_type == "None":
+            #     tag_type = 'untyped'
+            if tag_type not in prometheus_types:
+                tag_type = 'untyped'
+            basic_tags = {'host' : hostname, "cluster": cluster_name, "group" : host_group, "location":location}
             if 'extra_tag' in b:
-                basic_tags = basic_tags.replace('}', '')
                 for k, v in b['extra_tag'].items():
-                    basic_tags = basic_tags + ',' + k + '=' +  '"' + v + '"'
-                basic_tags = basic_tags + '}'
-
-            self.local_data =name+basic_tags + ' ' + str(b['value'])
-            self.data.append(self.local_data)
-
-
+                    basic_tags[k] = v
+            if tag_type not in self.data:
+                self.data[tag_type] = []
+            local_data = []
+            local_data.append(name)
+            local_data.append(basic_tags)
+            local_data.append(b['value'])
+            self.data[tag_type].append(local_data)
         elif tsdb_type == 'Carbon':
             s = cluster_name + '.' + host_group + '.' + path + '.' + location + '.' + tag_type
             if 'extra_tag' in b:
@@ -148,58 +147,58 @@ class JonSon(object):
                 for a in b['extra_tag']:
                     s = s + ',' + str(a) + '=' + str(b['extra_tag'][a])
             self.data.append(s  + ' value=' + value + ' ' + str_nano+ '\n')
-        elif tsd_oddeye is True:
-            local_data = {"metric": b["name"], "timestamp":b["timestamp"] , "value":b["value"],
-                          "tags": {"host": tag_hostname, "cluster": cluster_name, "group": host_group, "location": location}};
-
-            if 'chart_type' in b:
-              local_data["type"] = b['chart_type']
-            else:
-              local_data["type"] = 'None'
-
-            if 'reaction' in b:
-              local_data["reaction"] = b['reaction']
-            else:
-              local_data["reaction"] = 0
-
-            if 'check_type' in b:
-              local_data["tags"]["type"] = b['check_type']
-            else:
-              local_data["tags"]["type"] = 'None'
-
-            if 'extra_tag' in b:
-                for a in b['extra_tag']:
-                    local_data["tags"][a] = b['extra_tag'][a]
-
-            self.data['metric'].append(local_data)
+        # elif tsd_oddeye:
+        #     local_data = {"metric": b["name"], "timestamp":b["timestamp"] , "value":b["value"],
+        #                   "tags": {"host": tag_hostname, "cluster": cluster_name, "group": host_group, "location": location}};
+        #
+        #     if 'chart_type' in b:
+        #       local_data["type"] = b['chart_type']
+        #     else:
+        #       local_data["type"] = 'None'
+        #
+        #     if 'reaction' in b:
+        #       local_data["reaction"] = b['reaction']
+        #     else:
+        #       local_data["reaction"] = 0
+        #
+        #     if 'check_type' in b:
+        #       local_data["tags"]["type"] = b['check_type']
+        #     else:
+        #       local_data["tags"]["type"] = 'None'
+        #
+        #     if 'extra_tag' in b:
+        #         for a in b['extra_tag']:
+        #             local_data["tags"][a] = b['extra_tag'][a]
+        #
+        #     self.data['metric'].append(local_data)
 
     def prepare_data(self):
-        if tsd_rest is True:
+        if tsd_rest:
             try:
                 self.data = {'metric': []}
             except:
                 lib.puylogger.print_message('Recreating data in except block')
                 self.data = {'metric': []}
-        if tsd_carbon is True:
+        if tsd_carbon:
             try:
                 self.data = []
             except:
                 lib.puylogger.print_message('Recreating data in except block')
                 self.data = []
-        if tsd_influx is True or tsd_influx2 is True:
+        if tsd_influx or tsd_influx2:
             try:
                 self.data = []
             except:
                 lib.puylogger.print_message('Recreating data in except block')
                 self.data = []
-        if tsd_prometheus is True:
-            self.data = []
-        if tsd_oddeye is True:
-            try:
-                self.data = {'metric': []}
-            except:
-                lib.puylogger.print_message('Recreating data in except block')
-                self.data = {'metric': []}
+        if tsd_prometheus:
+            self.data = {}
+        # if tsd_oddeye:
+        #     try:
+        #         self.data = {'metric': []}
+        #     except:
+        #         lib.puylogger.print_message('Recreating data in except block')
+        #         self.data = {'metric': []}
     # ------------------------------------------- #
 
     def httt_set_opt(self,url, data):
@@ -219,12 +218,12 @@ class JonSon(object):
         http_oddeye_errors = [402, 406, 411, 415, 424]
         buffer = BytesIO()
 
-        if tsd_oddeye is True:
-            c.setopt(c.WRITEDATA, buffer)
-            c.setopt(pycurl.SSL_VERIFYPEER, 0)
-            c.setopt(pycurl.SSL_VERIFYHOST, 0)
-        else:
-            c.setopt(pycurl.WRITEFUNCTION, lambda x: None)
+        # if tsd_oddeye is True:
+        #     c.setopt(c.WRITEDATA, buffer)
+        #     c.setopt(pycurl.SSL_VERIFYPEER, 0)
+        #     c.setopt(pycurl.SSL_VERIFYHOST, 0)
+        # else:
+        c.setopt(pycurl.WRITEFUNCTION, lambda x: None)
 
         response_code = c.getinfo(pycurl.RESPONSE_CODE)
 
@@ -248,7 +247,6 @@ class JonSon(object):
                     file.write(str(data))
                     file.close()
 
-
             if response_code not in http_response_codes and response_exists is True:
                 if response_code in http_oddeye_errors:
                     lib.puylogger.print_message("%s : " % "OddEye Error" + str(response_code))
@@ -269,26 +267,24 @@ class JonSon(object):
                     file.close()
             except Exception as e:
                 lib.puylogger.print_message(str(e))
-
+    # What the fuck is this prom = ""
     def put_json(self, runscripts=True):
-        if tsd_oddeye:
-            if len(self.data['metric']) > 0:
-                if runscripts:
-                    json_data = json.dumps(self.data['metric'])
-                    send_data = barlus_style + json_data
-                    self.httt_set_opt(tsdb_url, send_data)
-                    self.upload_it(send_data)
-                    if lib.puylogger.debug_log:
-                        lib.puylogger.print_message('\n' + send_data)
-                    del send_data
-                    del json_data
-                else:
-                    return (len(self.data['metric']))
-            del self.data
-            self.data = None
-
-
-        if tsd_rest is True:
+        # if tsd_oddeye:
+        #     if len(self.data['metric']) > 0:
+        #         if runscripts:
+        #             json_data = json.dumps(self.data['metric'])
+        #             send_data = barlus_style + json_data
+        #             self.httt_set_opt(tsdb_url, send_data)
+        #             self.upload_it(send_data)
+        #             if lib.puylogger.debug_log:
+        #                 lib.puylogger.print_message('\n' + send_data)
+        #             del send_data
+        #             del json_data
+        #         else:
+        #             return (len(self.data['metric']))
+        #     del self.data
+        #     self.data = None
+        if tsd_rest:
             json_data = json.dumps(self.data['metric'])
             if curl_auth is True:
                 c.setopt(pycurl.USERPWD, tsdb_auth)
@@ -296,9 +292,7 @@ class JonSon(object):
             self.upload_it(json_data)
             if lib.puylogger.debug_log:
                 lib.puylogger.print_message('\n' + json_data)
-
-
-        if tsd_carbon is True:
+        if tsd_carbon:
             payload = pickle.dumps(self.data, protocol=2)
             header = struct.pack("!L", len(payload))
             message = header + payload
@@ -309,8 +303,7 @@ class JonSon(object):
             s.close()
             if lib.puylogger.debug_log:
                 lib.puylogger.print_message('\n' + message)
-
-        if tsd_influx is True:
+        if tsd_influx:
             line_data = '%s' % ''.join(map(str, self.data))
             if curl_auth is True:
                 c.setopt(pycurl.USERPWD, influx_auth)
@@ -318,101 +311,105 @@ class JonSon(object):
             self.upload_it(line_data)
             if lib.puylogger.debug_log:
                 lib.puylogger.print_message('\n' + line_data)
-        if tsd_influx2 is True:
+        if tsd_influx2:
             line_data = '%s' % '\n'.join(map(str, self.data))
             self.httt_set_opt(influx2_url, line_data)
             c.setopt(pycurl.HTTPHEADER, ['Authorization: Token ' + influx2_token])
             self.upload_it(line_data)
             if lib.puylogger.debug_log:
                 lib.puylogger.print_message('\n' + line_data)
-        if tsd_prometheus is True:
-            # ln = "# HELP Metrics provided by universal metrics collector PuyPuy."
-            # ln  = ln + '\n' + '# TYPE refer to documentation at https://oddeye.co/documentation/'
-            # line_data = ln + '\n' + '%s' % '\n'.join(map(str, self.data))
-            line_data = '%s' % '\n'.join(map(str, self.data))
+        if tsd_prometheus:
+            line_data=''
+            for k,v in self.data.items():
+                for t in v:
+                    ld = str(t[1]).replace("'", '"').replace('{"', '{').replace('": "', '="').replace('", "', ',"').replace(',"', '",')
+                    line_data = line_data + "# HELP Metrics provided by universal metrics collector PuyPuy. \n"
+                    line_data = line_data + "# TYPE "+ t[0] +" "+ k+"\n"
+                    line_data = line_data+(t[0] + ld + " " + str(t[2]))+"\n"
             if promq.qsize() == 0:
                 promq.put(line_data)
             else:
                 promq.get()
                 promq.put(line_data)
-
+            # lib.puylogger.print_message(self.prom)
 # ------------------------------------------------------------------------------- #
     def send_special(self, module, timestamp, value, error_msg, mytype, reaction=0, runscripts=True):
-        try:
-            if tsd_oddeye is True:
-                error_data = []
-                error_data.append({"metric": module,
-                                   "timestamp": timestamp,
-                                   "value": value,
-                                   "message": error_msg,
-                                   "type": "Special",
-                                   "status": mytype,
-                                   "reaction": reaction,
-                                   "tags": {"host": hostname,"cluster": cluster_name, "group": host_group}})
-                send_err_msg = json.dumps(error_data)
-                send_error_data = barlus_style + send_err_msg
-                try:
-                    self.httt_set_opt(tsdb_url, send_error_data)
-                    self.upload_it(send_error_data)
-                except Exception as r:
-                    lib.puylogger.print_message(r)
-                if lib.puylogger.debug_log:
-                    lib.puylogger.print_message(send_error_data)
-                del error_data
-                del send_err_msg
-                if not runscripts:
-                    return len(error_data)
-        except:
-                logging.critical(" %s : " % module + 'Cannot send error data')
+        pass
+        # try:
+        #     if tsd_oddeye is True:
+        #         error_data = []
+        #         error_data.append({"metric": module,
+        #                            "timestamp": timestamp,
+        #                            "value": value,
+        #                            "message": error_msg,
+        #                            "type": "Special",
+        #                            "status": mytype,
+        #                            "reaction": reaction,
+        #                            "tags": {"host": hostname,"cluster": cluster_name, "group": host_group}})
+        #         send_err_msg = json.dumps(error_data)
+        #         send_error_data = barlus_style + send_err_msg
+        #         try:
+        #             self.httt_set_opt(tsdb_url, send_error_data)
+        #             self.upload_it(send_error_data)
+        #         except Exception as r:
+        #             lib.puylogger.print_message(r)
+        #         if lib.puylogger.debug_log:
+        #             lib.puylogger.print_message(send_error_data)
+        #         del error_data
+        #         del send_err_msg
+        #         if not runscripts:
+        #             return len(error_data)
+        # except:
+        #         logging.critical(" %s : " % module + 'Cannot send error data')
 # ------------------------------------------------------------------------------- #
 
 def print_error(module, e):
     logging.basicConfig(filename=log_file, level=logging.DEBUG)
     logger = logging.getLogger("PuyPuy")
     logger.setLevel(logging.DEBUG)
-    def send_error_msg():
-        if tsd_oddeye is True:
-            logging.critical(module)
-            error_msg = str(e).replace('[', '').replace(']', '').replace('<', '').replace('>', '').replace('(', '').replace(')', '').replace("'", '').replace('"', '')
-            timestamp = int(datetime.datetime.now().strftime("%s"))
-            error_data = []
-            error_data.append({"metric": module,
-                               "timestamp": timestamp,
-                               "value": 16,
-                               "message": error_msg,
-                               "status": "ERROR",
-                               "type": "Special",
-                               "reaction": negative_handler,
-                               "tags": {"host": hostname, "cluster": cluster_name, "group": host_group}})
-            if lib.puylogger.debug_log:
-                lib.puylogger.print_message(str(error_data))
-            try:
-                send_err_msg = json.dumps(error_data)
-                if sandbox is True:
-                    barlus_style = 'UUID=' + oddeye_uuid + '&sandbox=true&data='
-                else:
-                    barlus_style = 'UUID=' + oddeye_uuid + '&data='
-
-                send_error_data = barlus_style + send_err_msg
-                jonson=JonSon()
-                jonson.httt_set_opt(tsdb_url, send_error_data)
-                c.setopt(pycurl.POSTFIELDS, send_error_data)
-                c.perform()
-                del error_msg
-                del error_data
-                del send_error_data
-            except Exception as dddd:
-                logging.critical(" %s : " % str(dddd))
-                pass
-
-        else:
-            logging.critical(" %s : " % module + str(e))
+    # def send_error_msg():
+    #     if tsd_oddeye:
+    #         logging.critical(module)
+    #         error_msg = str(e).replace('[', '').replace(']', '').replace('<', '').replace('>', '').replace('(', '').replace(')', '').replace("'", '').replace('"', '')
+    #         timestamp = int(datetime.datetime.now().strftime("%s"))
+    #         error_data = []
+    #         error_data.append({"metric": module,
+    #                            "timestamp": timestamp,
+    #                            "value": 16,
+    #                            "message": error_msg,
+    #                            "status": "ERROR",
+    #                            "type": "Special",
+    #                            "reaction": negative_handler,
+    #                            "tags": {"host": hostname, "cluster": cluster_name, "group": host_group}})
+    #         if lib.puylogger.debug_log:
+    #             lib.puylogger.print_message(str(error_data))
+    #         try:
+    #             send_err_msg = json.dumps(error_data)
+    #             if sandbox is True:
+    #                 barlus_style = 'UUID=' + oddeye_uuid + '&sandbox=true&data='
+    #             else:
+    #                 barlus_style = 'UUID=' + oddeye_uuid + '&data='
+    #
+    #             send_error_data = barlus_style + send_err_msg
+    #             jonson=JonSon()
+    #             jonson.httt_set_opt(tsdb_url, send_error_data)
+    #             c.setopt(pycurl.POSTFIELDS, send_error_data)
+    #             c.perform()
+    #             del error_msg
+    #             del error_data
+    #             del send_error_data
+    #         except Exception as dddd:
+    #             logging.critical(" %s : " % str(dddd))
+    #             pass
+    #     else:
+    #         logging.critical(" %s : " % module + str(e))
     try:
         if module == 'lib.pushdata':
             logging.critical(" %s : " % "Failed to connect to Barlus" + str(e))
             pass
         else:
-            send_error_msg()
+            logging.critical(" %s : " % module + str(e))
+            # send_error_msg()
 
     except Exception as err:
         logging.critical(" %s : " % "Cannot send error" + str(err))

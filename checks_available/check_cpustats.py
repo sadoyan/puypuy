@@ -13,7 +13,7 @@ import lib.basecheck
 # 6: softirq: servicing softirqs
 
 
-check_type = 'system'
+check_type = 'gauge'
 values_type = 'Percent'
 static_alerts = lib.getconfig.getparam('CPU Stats', 'static_enabled')
 per_cpu = lib.getconfig.getparam('CPU Stats', 'percore_stats')
@@ -31,7 +31,7 @@ class Check(lib.basecheck.CheckBase):
         rate_cpu_time = rate.record_value_delta("cpu_load"+core, cpu_stats[0] + cpu_stats[1] + cpu_stats[2])
         cpu_load = rate_cpu_time / rate_time * 100;
         local_vars.append(
-            {'name': "cpu_load", 'timestamp': timestamp, 'value': cpu_load, 'chart_type': self.values_type, 'reaction': 0, 'extra_tag':{'core': core}})
+            {'name': "cpu_load", 'timestamp': timestamp, 'value': cpu_load, 'chart_type': self.values_type, 'check_type':'gauge', 'reaction': 0, 'extra_tag':{'core': core}})
         try:
             for index in range(0, len(metrinames)):
                 name = metrinames[index]+core
@@ -43,7 +43,7 @@ class Check(lib.basecheck.CheckBase):
 
                 values_rate = rate.record_value_delta(name, value)
                 values_percent = (values_rate / rate_time *100)
-                local_vars.append({'name': metrinames[index], 'timestamp': timestamp, 'value': values_percent, 'chart_type': self.values_type, 'reaction': reaction, 'check_type': self.check_type, 'extra_tag':{'core': core}})
+                local_vars.append({'name': metrinames[index], 'timestamp': timestamp, 'value': values_percent, 'chart_type': self.values_type, 'reaction': reaction, 'check_type': check_type, 'extra_tag':{'core': core}})
         except Exception as e:
             lib.pushdata.print_error(__name__ , (e))
             pass

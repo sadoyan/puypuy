@@ -15,6 +15,20 @@ try:
 except:
     auth = False
 
+
+prev_value = {"prometheus": None}
+def promvalue(mytype):
+    try:
+        if lib.pushdata.promq.qsize() != 0:
+            prev_value.update({mytype: lib.pushdata.promq.get()})
+            return prev_value[mytype]
+        else:
+            return prev_value[mytype]
+    except Exception as e:
+        lib.puylogger.print_message(__name__, str(e))
+        pass
+
+
 class PuyPuyWeb(BaseHTTPRequestHandler):
     def the_job(self):
         if self.path == '/nag':
@@ -26,7 +40,6 @@ class PuyPuyWeb(BaseHTTPRequestHandler):
                 self.send_header("Content-type", "application/json")
                 self.end_headers()
                 self.wfile.write(str.encode(ret + "\n"))
-                lib.puylogger.print_message(ret)
             except Exception as error:
                 lib.puylogger.print_message("Something's gone werong: {}".format(error), ":Check your data please")
         else:
@@ -41,8 +54,7 @@ class PuyPuyWeb(BaseHTTPRequestHandler):
             self.send_header("Content-type", "text/plain; version=0.0.4; charset=utf-8")
             # self.send_header("Transfer-Encoding", "chunked")
             self.end_headers()
-            data = lib.pushdata.promq.get()
-            self.wfile.write(bytes(data + "\n", "utf-8"))
+            self.wfile.write(bytes(promvalue("prometheus") + "\n", "utf-8"))
         elif self.path == '/nag':
             self.send_response(501)
             self.send_header("Content-type", "text/plain; version=0.0.4; charset=utf-8")
