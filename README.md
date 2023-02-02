@@ -1,12 +1,7 @@
-**OddEye Agent**
+**PuyPuy**
 ---------
 
-
-OE-Agent3 is python3 metrics collection daemon for OddEye monitoring suite.
-
-[OddEye](#oddeye)
-
-We have developed OE-Agent to support number of other OpenSource backends :
+Metrics collector tool, which works with multiple time series databases .
 
 [OpenTSDB](#opentsdb)
 
@@ -20,9 +15,9 @@ We have developed OE-Agent to support number of other OpenSource backends :
 It uses REST and Pickle protocols with bulk uploads to talk to endpoints, 
 so make sure your endpoint i configured properly. 
 
-Main idea behind OddEye Agent is simplicity and less as possible dependencies, it is tested on Debian and Ubuntu systems, but should work on any Linux system.   
+Main idea behind PuyPuyis simplicity and less as possible dependencies, it is tested on Debian and Ubuntu systems, but should work on any Linux system.   
 
-To install OddEye Agent just clone our repository. Base program requires only pycurl as external dependency. 
+To install PuyPuyjust clone our repository. Base program requires only pycurl as external dependency. 
 On Debian/Ubuntu you can install it via apt-get
  
     apt-get install python3-pycurl 
@@ -49,7 +44,7 @@ Python daemon process will start, run all python scripts from checks_available d
 
 ### Main Config
 
-OddEye client (OddEye Agent) uses simple ini files to configure main service and all checks. Configs are splitted into sections. Section [SelfConfig] contains base config parameters like checks interval, log/pid file location as well as some basic tags. 
+PuyPuy uses simple ini files to configure main service and all checks. Configs are splitted into sections. Section [SelfConfig] contains base config parameters like checks interval, log/pid file location as well as some basic tags. 
 
     [SelfConfig]
     check_period_seconds = 5
@@ -64,24 +59,11 @@ cluster_name and host_group are placeholders for tags for better manageability.
 In section [TSDB] you should set correct backend and uri. 
 
 ### Back End Config
-To make it run you need to change **uuid** to one which you got during registration and start OddEye Agent, optionally change run user from oddeye.sh and start 
+To make it run you need to change **uuid** to one which you got during registration and start PuyPuy, optionally change run user from oddeye.sh and start 
 
     ./oddeye.sh start 
 
-OddEye server is native backend, but OddEye Agent can for with number of other open source backends. All configs are done at TSDB section of config.ini. Only one TSDB can be set at once, so make sure that all other are ether commented out or deleted from config file. 
-
-#### **OddEye** 
-
-    [TSDB]
-    tsdtype = OddEye
-    url = https://barlus.oddeye.co/oddeye-barlus/put/tsdb
-    uuid = xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-    sandbox = False
-    err_handler = 2
-
-As OddEye Agent send metrics with small bulks you should enable chunked requests in opentsdb.conf
-
-	tsd.http.request.enable_chunked = true
+PuyPuycan for with number of other open source backends. All configs are done at TSDB section of config.ini. Only one TSDB can be set at once, so make sure that all other are ether commented out or deleted from config file. 
 
 #### **OpenTSDB**
 
@@ -92,6 +74,10 @@ As OddEye Agent send metrics with small bulks you should enable chunked requests
 	user: netangels
 	pass: bololo
 	auth: False
+
+As PuyPuysend metrics with small bulks you should enable chunked requests in opentsdb.conf
+
+	tsd.http.request.enable_chunked = true
 
 OpenTSDB is designed to run in private networks and does not supports authentication, but if you want it to be public available, you can use any proxy server like Haproxy or NginX with basic auth enabled and configure credentials in  config.ini. If you do not need authentication, just set auth param to False and some placeholders as user/pass.  **Do not delete user/pass/auth parameters.**
 
@@ -128,9 +114,9 @@ Enable or disable authentication.
 	auth: false
 	tsdtype: Carbon
 
-OddEye Agent uses Carbon pickle, default port is 2004
+PuyPuyuses Carbon pickle, default port is 2004
 
-OddEye Agent is completely stateless, so if you want to scale Backend, you can use any load balancing mechanism including DNS Round Robin.  
+PuyPuyis completely stateless, so if you want to scale Backend, you can use any load balancing mechanism including DNS Round Robin.  
 
 For all types of REST Backens (OpenTSDB, KairosDB, InfluxDB) config fields user/pass are mandatory even if you do not user authentication at backend.
 So **Do not delete authentication parameters**,  just write something meaningless and use it as placeholder. 
@@ -231,15 +217,6 @@ All is needed from custom is to system out values in right order, Below is sampl
 	echo $mytype $myvalue $check_type $check_style
 	echo -n $mytype2 $myvalue2 $check_type2 $check_style2
 
-### OddEye Specific 
-
-As OddEye is completely push based and our servers does not have any direct access to your infrastructure we need special check which will determine if particular host is alive or not. Thus we made small module, which will call our servers and send response times as any other module do. We will generate host alive parameter based based on this. If you want to have host aliveness test just enable check_oddeye.py as you will do with any other python check:
-
-    cd ${puypuy_home}/checks enabled
-    ln -s ../checks-available/check_oddeye.py ./ 
-    ../oddeye.sh restart 
-
-OddEye is dynamic system based on machine learning, but if you want to have statically defined alerts you can use  `send_special` method in python module. Example below demonstrates how custom alerts can be configured its taken from check_load_average: 
 
 ```python
 import lib.getconfig
