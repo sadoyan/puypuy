@@ -104,7 +104,10 @@ Enable or disable auth: in accordance to your KairosDB setup
     tsdtype: InfluxDB
 
 Enable or disable authentication.
- 
+
+#### **Prometheus**
+```tsdtype: Prometheus``` 
+
 #### **Graphite Carbon** 
 
 	[TSDB]
@@ -269,21 +272,5 @@ class Check(lib.basecheck.CheckBase):
             lib.pushdata.print_error(__name__ , (e))
             pass
 ```
-You can disable or change dynamic alerting for particular checks, by passing `reaction` parameter to `jsondata.gen_data` . Its done this way : 
-
-    reaction = -3 # (Disables dynamic alerting and learning on this check)
-    reaction = -1 # (Disables dynamic alerting if values are smaller than expected)
-    reaction = -2 # (Disables dynamic alerting if values are bigger than expected)
-    reaction = 0  # (Default : Enable dynamic alerting and learning on this check)
-    jsondata.gen_data(txname, timestamp, value, lib.pushdata.hostname, check_type, cluster_name, reaction)
-
-We have created another **OddEye** specific optional parameter. This is to tell back-end type of incoming messages. It accepts "Rate" and "Counter" arguments.
-
-**Rate**: is used to tell **OddEye** that incoming metrics are rated so back-end knows **better** how to calculate  dynamic rules.
-
-**Counter**: Is set when we have increasing counter for metrics values. This is needed to do better calculation of regression, and to reset it when next value is smaller than previous . For doing this we have special reason, which may not feet your requirements, so if you find this not suitable for your needs, do not set parameter even when your metrics values are increasing counter, but keep in mind to manually drop regression when you counter resets. Otherwise regression counter will think that something happens as new values are out of expected regression scopes and will set high level of alerting to check. 
-
-
-    jsondata.gen_data(txname, timestamp, value, lib.pushdata.hostname, check_type, cluster_name, reaction, 'Counter')
 
 [Full documentation](https://www.oddeye.co/documentation/)
