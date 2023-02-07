@@ -273,4 +273,4 @@ class Check(lib.basecheck.CheckBase):
             pass
 ```
 
-[Full documentation](https://www.oddeye.co/documentation/)
+[Full documentation](https://sadoyan.github.io/puypuydocs/)
