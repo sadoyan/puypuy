@@ -94,7 +94,7 @@ class Check(lib.basecheck.CheckBase):
                     fields = line.strip().split()
                     name = 'drive_'+fields[2]+'_io_percent'
                     # regexp = re.compile(r'\d')
-                    regexp = re.compile(r'sd[a-z][0-9]|sr[0-9]|p[0-9]')
+                    regexp = re.compile(r'sd[a-z][0-9]|sr[0-9]|p[0-9]|boot|zram')
                     if regexp.search(name) is None:
                         value = fields[12]
                         reqrate = rate.record_value_rate(name, value, self.timestamp)
