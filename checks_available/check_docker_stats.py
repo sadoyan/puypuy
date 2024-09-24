@@ -47,7 +47,7 @@ class Check(lib.basecheck.CheckBase):
     
                 cpudelta = data['cpu_stats']['cpu_usage']['total_usage'] - prev_cpu_usage
                 systemdelta = data['cpu_stats']['system_cpu_usage'] - prev_system_usage
-                num_cpu = len(data['precpu_stats']['cpu_usage']['percpu_usage'])
+                num_cpu = len(data['precpu_stats']['cpu_usage'])
     
                 cpu_percent = (cpudelta / systemdelta) * num_cpu * 100.0
                 self.local_vars.append({'name': check_type + '_container_cpu_usage', 'timestamp': self.timestamp, 'value': float("{:.2f}".format(cpu_percent)), 'chart_type': 'Percent', 'check_type': check_type, 'extra_tag':{'container': container_name}})
@@ -70,13 +70,11 @@ class Check(lib.basecheck.CheckBase):
     
                 if memstats is True:
                     mem_cur_usage = data['memory_stats']['usage']
-                    mem_max_usage = data['memory_stats']['max_usage']
+                    # mem_max_usage = data['memory_stats']['max_usage']
                     self.local_vars.append({'name': check_type + '_mem_cur_usage', 'timestamp': self.timestamp, 'value': mem_cur_usage, 'check_type': check_type, 'extra_tag':{'container': container_name}})
-                    self.local_vars.append({'name': check_type + '_mem_max_usage', 'timestamp': self.timestamp, 'value': mem_max_usage, 'check_type': check_type, 'extra_tag':{'container': container_name}})
+                    # self.local_vars.append({'name': check_type + '_mem_max_usage', 'timestamp': self.timestamp, 'value': mem_max_usage, 'check_type': check_type, 'extra_tag':{'container': container_name}})
                     if detailed_mon is True:
-                        memchecks = ('total_active_anon', 'total_active_file', 'total_cache',
-                                     'total_inactive_anon', 'total_inactive_file', 'total_mapped_file',
-                                     'total_rss', 'total_swap', 'total_unevictable')
+                        memchecks = ('active_anon', 'active_file', 'inactive_anon', 'inactive_file', 'file_mapped', 'unevictable')
                         for memcheck in memchecks:
                             value = data['memory_stats']['stats'][memcheck]
                             self.local_vars.append({'name': check_type + '_mem_' + memcheck, 'timestamp': self.timestamp, 'value': value, 'check_type': check_type, 'extra_tag':{'container': container_name}})
