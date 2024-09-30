@@ -15,7 +15,8 @@ class Check(lib.basecheck.CheckBase):
         try:
             nomad_stats = lib.commonclient.httpget(__name__, nomad_url)
             stats_json = json.loads(nomad_stats)
-            basestats = ('nomad.client.allocated.cpu', 'nomad.client.unallocated.cpu', 'nomad.client.allocated.memory', 'nomad.client.unallocated.memory',
+            basestats = ('nomad.client.allocations.running', 'nomad.client.allocations.blocked', 'nomad.client.allocations.pending'
+                         'nomad.client.unallocated.cpu','nomad.client.allocated.cpu','nomad.client.allocated.memory', 'nomad.client.unallocated.memory',
                          'nomad.client.allocated.disk', 'nomad.client.unallocated.disk', 'nomad.client.allocated.network', 'nomad.client.unallocated.network',
                          'nomad.runtime.num_goroutines', 'nomad.runtime.alloc_bytes', 'nomad.runtime.heap_objects')
             serverstats = ('nomad.nomad.job_summary.queued', 'nomad.nomad.job_summary.complete', 'nomad.nomad.job_summary.failed',
