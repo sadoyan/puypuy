@@ -47,7 +47,7 @@ class Check(lib.basecheck.CheckBase):
                     self.local_vars.append({'name': 'redis_' + key, 'timestamp': self.timestamp, 'value': value, 'check_type': check_type})
                 if key in ms_rated:
                     vrate = self.rate.record_value_rate('redis_' + key , value, self.timestamp)
-                    self.local_vars.append({'name':'redis_' + key, 'timestamp': self.timestamp, 'value': value, 'check_type': check_type, 'chart_type': 'Rate'})
+                    self.local_vars.append({'name':'redis_' + key, 'timestamp': self.timestamp, 'value': vrate, 'check_type': check_type, 'chart_type': 'Rate'})
 
         except Exception as e:
             lib.puylogger.print_message(__name__ + ' Error : ' + str(e))
