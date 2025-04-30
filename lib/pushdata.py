@@ -78,17 +78,17 @@ else:
 
 # if tsdb_type == 'OddEye':
 #     tsdb_url = lib.getconfig.getparam('TSDB', 'url')
-#     oddeye_uuid = lib.getconfig.getparam('TSDB', 'uuid')
-#     tsd_oddeye = True
+#     puypuy_uuid = lib.getconfig.getparam('TSDB', 'uuid')
+#     tsd_puypuy = True
 #     error_handler = int(lib.getconfig.getparam('SelfConfig', 'error_handler'))
 #     negative_handler = error_handler * -1
 #     sandbox = bool(lib.getconfig.getparam('TSDB', 'sandbox'))
 #     if sandbox is True:
-#         barlus_style = 'UUID=' + oddeye_uuid + '&sandbox=true&data='
+#         barlus_style = 'UUID=' + puypuy_uuid + '&sandbox=true&data='
 #     else:
-#         barlus_style = 'UUID=' + oddeye_uuid + '&data='
+#         barlus_style = 'UUID=' + puypuy_uuid + '&data='
 # else:
-#     tsd_oddeye = False
+#     tsd_puypuy = False
 
 prometheus_types = {"gauge", "counter", "histogram", "summary"}
 class JonSon(object):
@@ -147,7 +147,7 @@ class JonSon(object):
                 for a in b['extra_tag']:
                     s = s + ',' + str(a) + '=' + str(b['extra_tag'][a])
             self.data.append(s  + ' value=' + value + ' ' + str_nano+ '\n')
-        # elif tsd_oddeye:
+        # elif tsd_puypuy:
         #     local_data = {"metric": b["name"], "timestamp":b["timestamp"] , "value":b["value"],
         #                   "tags": {"host": tag_hostname, "cluster": cluster_name, "group": host_group, "location": location}};
         #
@@ -193,7 +193,7 @@ class JonSon(object):
                 self.data = []
         if tsd_prometheus:
             self.data = {}
-        # if tsd_oddeye:
+        # if tsd_puypuy:
         #     try:
         #         self.data = {'metric': []}
         #     except:
@@ -215,10 +215,10 @@ class JonSon(object):
 
     def upload_it(self, data):
         http_response_codes = [100, 101, 102, 200, 201, 202, 203, 204, 205, 206, 207, 208, 226, 300, 301, 302, 303, 304, 305, 306, 307, 308]
-        http_oddeye_errors = [402, 406, 411, 415, 424]
+        http_puypuy_errors = [402, 406, 411, 415, 424]
         buffer = BytesIO()
 
-        # if tsd_oddeye is True:
+        # if tsd_puypuy is True:
         #     c.setopt(c.WRITEDATA, buffer)
         #     c.setopt(pycurl.SSL_VERIFYPEER, 0)
         #     c.setopt(pycurl.SSL_VERIFYHOST, 0)
@@ -248,7 +248,7 @@ class JonSon(object):
                     file.close()
 
             if response_code not in http_response_codes and response_exists is True:
-                if response_code in http_oddeye_errors:
+                if response_code in http_puypuy_errors:
                     lib.puylogger.print_message("%s : " % "OddEye Error" + str(response_code))
                     logging.critical(" %s : " % "OddEye Error" +  str(buffer.getvalue().decode('iso-8859-1')).replace('\n',''))
                 else:
@@ -269,7 +269,7 @@ class JonSon(object):
                 lib.puylogger.print_message(str(e))
     # What the fuck is this prom = ""
     def put_json(self, runscripts=True):
-        # if tsd_oddeye:
+        # if tsd_puypuy:
         #     if len(self.data['metric']) > 0:
         #         if runscripts:
         #             json_data = json.dumps(self.data['metric'])
@@ -336,7 +336,7 @@ class JonSon(object):
     def send_special(self, module, timestamp, value, error_msg, mytype, reaction=0, runscripts=True):
         pass
         # try:
-        #     if tsd_oddeye is True:
+        #     if tsd_puypuy is True:
         #         error_data = []
         #         error_data.append({"metric": module,
         #                            "timestamp": timestamp,
@@ -368,7 +368,7 @@ def print_error(module, e):
     logger = logging.getLogger("PuyPuy")
     logger.setLevel(logging.DEBUG)
     # def send_error_msg():
-    #     if tsd_oddeye:
+    #     if tsd_puypuy:
     #         logging.critical(module)
     #         error_msg = str(e).replace('[', '').replace(']', '').replace('<', '').replace('>', '').replace('(', '').replace(')', '').replace("'", '').replace('"', '')
     #         timestamp = int(datetime.datetime.now().strftime("%s"))
@@ -386,9 +386,9 @@ def print_error(module, e):
     #         try:
     #             send_err_msg = json.dumps(error_data)
     #             if sandbox is True:
-    #                 barlus_style = 'UUID=' + oddeye_uuid + '&sandbox=true&data='
+    #                 barlus_style = 'UUID=' + puypuy_uuid + '&sandbox=true&data='
     #             else:
-    #                 barlus_style = 'UUID=' + oddeye_uuid + '&data='
+    #                 barlus_style = 'UUID=' + puypuy_uuid + '&data='
     #
     #             send_error_data = barlus_style + send_err_msg
     #             jonson=JonSon()

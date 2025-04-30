@@ -46,9 +46,9 @@ if input_base_dir == '':
     input_base_dir = os.getcwd()
 
 base_dir = input_base_dir.rstrip('/')
-log_file = base_dir + '/var/oddeye.log'
-pid_file = base_dir + '/var/oddeye.pid'
-tmpdir = base_dir + '/var/oddeye_tmp'
+log_file = base_dir + '/var/puypuy.log'
+pid_file = base_dir + '/var/puypuy.pid'
+tmpdir = base_dir + '/var/puypuy_tmp'
 location = input("Your servers location (Aka : us-east-1): ")
 cluster_name = input("Friendly name of your cluster: ")
 host_group = input("Grouping TAG of hosts: ")
@@ -73,9 +73,9 @@ for root, dirs, files in os.walk(base_dir, topdown=False):
         os.chown((os.path.join(root, name)), uid, gid)
 
 conf_system_checks = input("Do you want me to enable basic system checks (yes/no): ")
-systemd_service = input("Do you want to run OddEye agent at system boot (yes/no): ")
+systemd_service = input("Do you want to run PuyPuy at system boot (yes/no): ")
 
-conf_tsdb_type = input("Please select DB server (OddEye / InfluxDB / InfluxDB2 / OpenTSDB / KairosDB / Carbon): ")
+conf_tsdb_type = input("Please select DB server (InfluxDB / InfluxDB2 / OpenTSDB / KairosDB / Carbon): ")
 
 
 while conf_system_checks not in ['yes', 'no']:
@@ -88,11 +88,6 @@ parser.read(config_file)
 service_file = '/lib/systemd/system/oe-agent.service'
 sparser = ConfigParser()
 sparser.optionxform = str
-
-if conf_tsdb_type == 'OddEye':
-    url = 'https://api.oddeye.co/oddeye-barlus/put/tsdb'
-    uuid = input("Please enter your UID: ")
-    parser['TSDB'] = {'url': url, 'uuid': uuid, 'sandbox': 'False', 'tsdtype': 'OddEye'}
 
 if conf_tsdb_type == 'InfluxDB':
     address = input('Please enter InfluxDB address, defaults to http://127.0.0.1:8086: ')
@@ -188,7 +183,7 @@ parser['SelfConfig'] = {'check_period_seconds': check_period, 'error_handler': '
                         'pid_file': pid_file,'cluster_name': cluster_name, 'host_group': host_group, 'tmpdir': tmpdir,
                         'debug_log': 'False', 'run_user': run_user, 'max_cache': '50000', 'location': location, 'shorthostname': shorthosts}
 
-sparser['Unit'] = {'Description': 'OddEye Agent Service', 'After': 'syslog.target'}
+sparser['Unit'] = {'Description': 'PuyPuy Service', 'After': 'syslog.target'}
 sparser['Install'] = {'WantedBy': 'multi-user.target'}
 
 groups = [g.gr_name for g in grp.getgrall() if run_user in g.gr_mem]
@@ -196,7 +191,7 @@ gid = pwd.getpwnam(run_user).pw_gid
 group = grp.getgrgid(gid).gr_name
 
 sparser['Service'] = {'Type': 'simple', 'User': run_user, 'Group': group, 'WorkingDirectory': base_dir + '/',
-                      'ExecStart': sys.executable + ' ' + base_dir + '/oddeye.py systemd', 'PIDFile': pid_file, 'Restart': 'on-failure'}
+                      'ExecStart': sys.executable + ' ' + base_dir + '/puypuy.py systemd', 'PIDFile': pid_file, 'Restart': 'on-failure'}
 
 
 with open(service_file, 'w') as servicefile:
@@ -210,7 +205,7 @@ dst = (os.path.dirname(os.path.realpath("__file__"))+'/checks_enabled')
 
 os.chdir(dst)
 
-syschecks = ('check_cpustats.py', 'check_disks.py', 'check_load_average.py', 'check_memory.py', 'check_network_bytes.py', 'check_oddeye.py')
+syschecks = ('check_cpustats.py', 'check_disks.py', 'check_load_average.py', 'check_memory.py', 'check_network_bytes.py')
 
 if conf_system_checks == 'yes':
     for syscheck in syschecks:

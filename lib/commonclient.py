@@ -26,7 +26,7 @@ def httpget(name, url, auth=None, headers=None):
         body = buffer.getvalue()
         return body.decode('iso-8859-1')
     except Exception as err:
-        if name == 'check_oddeye':
+        if name == 'check_puypuy':
             lib.pushdata.print_error(name, err)
         else:
             lib.puylogger.print_message(name + ' ' + str(err))

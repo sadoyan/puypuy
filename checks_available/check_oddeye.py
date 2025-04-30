@@ -6,7 +6,7 @@ import lib.commonclient
 import lib.basecheck
 import time
 
-check_site = 'https://api.oddeye.co/ok.txt'
+check_site = 'https://api.puypuy.co/ok.txt'
 cluster_name = lib.getconfig.getparam('SelfConfig', 'cluster_name')
 
 

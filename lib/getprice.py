@@ -35,7 +35,7 @@ cluster_name = lib.getconfig.getparam('SelfConfig', 'cluster_name')
 extra_tags = ('chart_type', 'check_type')
 jsondata = lib.pushdata.JonSon()
 
-pl = json.loads(lib.commonclient.httpget(__name__, 'https://app.oddeye.co/OddeyeCoconut/getpayinfo'))
+pl = json.loads(lib.commonclient.httpget(__name__, 'https://app.puypuy.co/OddeyeCoconut/getpayinfo'))
 u_p = float(pl['mp'])
 p_f = float(pl['pf'])
 p_p = float(pl['pp'])
