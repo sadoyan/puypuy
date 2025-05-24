@@ -28,9 +28,9 @@ class Check(lib.basecheck.CheckBase):
 
             ms = ('connected_clients', 'used_memory', 'used_memory_rss','used_memory_peak' ,
                 'uptime_in_seconds','mem_fragmentation_ratio',
-                'rdb_changes_since_last_save', 'rdb_bgsave_in_progress', 'rdb_last_bgsave_time_sec', 'rdb_current_bgsave_time_sec', 'keyspace_hits', 'keyspace_misses')
+                'rdb_changes_since_last_save', 'rdb_bgsave_in_progress', 'rdb_last_bgsave_time_sec', 'rdb_current_bgsave_time_sec')
 
-            ms_rated = ('total_commands_processed', 'expired_keys', 'evicted_keys', 'total_net_input_bytes', 'total_net_output_bytes')
+            ms_rated = ('total_commands_processed', 'expired_keys', 'evicted_keys', 'total_net_input_bytes', 'total_net_output_bytes', 'keyspace_hits', 'keyspace_misses')
 
             datadict = {}
             for line in raw_data.splitlines():
@@ -47,6 +47,10 @@ class Check(lib.basecheck.CheckBase):
                     self.local_vars.append({'name': 'redis_' + key, 'timestamp': self.timestamp, 'value': value, 'check_type': check_type})
                 if key in ms_rated:
                     vrate = self.rate.record_value_rate('redis_' + key , value, self.timestamp)
+                    # if key == "keyspace_hits" or key == "keyspace_misses" or key == "total_commands_processed":
+                    #     lib.puylogger.print_message(key + ", float : " + str(vrate) + ", int : " + str(int(vrate)) + ", raw : " + value)
+                    # if key == "keyspace_hits" or key == "keyspace_misses":
+                    #     vrate = int(vrate)
                     self.local_vars.append({'name':'redis_' + key, 'timestamp': self.timestamp, 'value': vrate, 'check_type': check_type, 'chart_type': 'Rate'})
 
         except Exception as e:
