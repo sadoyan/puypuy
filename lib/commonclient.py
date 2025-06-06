@@ -1,3 +1,5 @@
+from urllib.parse import urlencode
+
 import pycurl
 import socket
 import lib.puylogger
@@ -31,6 +33,40 @@ def httpget(name, url, auth=None, headers=None):
         else:
             lib.puylogger.print_message(name + ' ' + str(err))
             lib.pushdata.print_error(name, err)
+
+
+def httppost(name, url, auth=None, headers=None, payload=None):
+    try:
+        buffer = BytesIO()
+        c = pycurl.Curl()
+        c.setopt(c.URL, url)
+        c.setopt(c.WRITEDATA, buffer)
+        c.setopt(c.FAILONERROR, True)
+        c.setopt(pycurl.CONNECTTIMEOUT, 10)
+        c.setopt(pycurl.USERAGENT, 'OddEye.co (Python agent)')
+        c.setopt(pycurl.TIMEOUT, 10)
+        c.setopt(pycurl.NOSIGNAL, 5)
+        c.setopt(pycurl.SSL_VERIFYPEER, 0)
+        c.setopt(pycurl.SSL_VERIFYHOST, 0)
+        # c.setopt(pycurl.POST, 1)
+        c.setopt(pycurl.POSTFIELDS, payload)
+        if auth is not None:
+            c.setopt(pycurl.USERPWD, auth)
+        if headers is not None:
+            c.setopt(pycurl.HTTPHEADER, [headers])
+        c.perform()
+        c.close()
+        body = buffer.getvalue()
+        return body.decode('iso-8859-1')
+    except Exception as err:
+        if name == 'check_puypuy':
+            lib.pushdata.print_error(name, err)
+        else:
+            lib.puylogger.print_message(name + ' ' + str(err))
+            lib.pushdata.print_error(name, err)
+
+
+
 
 
 def socketget(name, buff, host, port, message):
