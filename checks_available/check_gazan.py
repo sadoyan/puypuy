@@ -5,14 +5,14 @@ import lib.puylogger
 import lib.basecheck
 import re
 
-metrics = lib.getconfig.getparam('Gazan', 'metrics')
-# metrics = "http://127.0.0.1:3000/metrics"
-check_type = 'gazan'
+# metrics = lib.getconfig.getparam('Gazan', 'metrics')
+metrics = "http://g01:3000/metrics"
+check_type = 'aralez'
 greps = ('sum', 'count', 'process')
 reaction = 0
 
-rated = {'gazan_requests_by_method_total', 'gazan_requests_total', 'gazan_responses_total', 'gazan_requests_by_version_total'}
-mat = {'gazan_request_latency_seconds_bucket', 'gazan_response_latency_seconds_bucket'}
+rated = {'aralez_requests_by_method_total', 'aralez_requests_total', 'aralez_responses_total', 'aralez_requests_by_version_total'}
+mat = {'aralez_request_latency_seconds_bucket', 'aralez_response_latency_seconds_bucket'}
 
 class Check(lib.basecheck.CheckBase):
     def precheck(self):
@@ -30,10 +30,10 @@ class Check(lib.basecheck.CheckBase):
                                 value = self.rate.record_value_rate(a[0]+k+v, a[-1], self.timestamp)
                                 name = a[0].replace("_total", "")
                                 self.local_vars.append({'name': name, 'timestamp': self.timestamp, 'value': value, 'reaction': reaction, 'check_type': check_type,'extra_tag': {k: v}})
-                        elif a[0] == "gazan_request_latency_seconds_bucket":
+                        elif a[0] == "aralez_request_latency_seconds_bucket":
                             for k, v in d.items():
                                 request[v] = float(a[-1])
-                        elif a[0] == "gazan_response_latency_seconds_bucket":
+                        elif a[0] == "aralez_response_latency_seconds_bucket":
                             for k, v in d.items():
                                 response[v] = float(a[-1])
                         else:
@@ -51,12 +51,12 @@ class Check(lib.basecheck.CheckBase):
                 value = histogram_quantile(x, request)
                 n = "percentile"
                 v = str(int(x*100))
-                self.local_vars.append({'name': "gazan_request_latency", 'timestamp': self.timestamp, 'value': value, 'reaction': reaction, 'check_type': check_type, 'extra_tag': {n: v}})
+                self.local_vars.append({'name': "aralez_request_latency", 'timestamp': self.timestamp, 'value': value, 'reaction': reaction, 'check_type': check_type, 'extra_tag': {n: v}})
             for x in [0.50, 0.75, 0.85, 0.90, 0.95, 0.99]:
                 value = histogram_quantile(x, response)
                 n = "percentile"
                 v = str(int(x*100))
-                self.local_vars.append({'name': "gazan_response_latency", 'timestamp': self.timestamp, 'value': value, 'reaction': reaction, 'check_type': check_type, 'extra_tag': {n: v}})
+                self.local_vars.append({'name': "aralez_response_latency", 'timestamp': self.timestamp, 'value': value, 'reaction': reaction, 'check_type': check_type, 'extra_tag': {n: v}})
         except Exception as e:
             lib.puylogger.print_message(__name__ + ' Error : ' + str(e))
             pass
