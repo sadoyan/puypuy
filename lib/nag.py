@@ -11,9 +11,8 @@ for cfg in cfgs:
 
 def run_nag(name):
     try:
-        input = json.loads(name)
+        input = json.loads(name.decode('utf-8'))
     except Exception as e:
-        lib.puylogger.print_message(str(e))
         return e
     if len(input) == 1:
         for key, val in input.items() :

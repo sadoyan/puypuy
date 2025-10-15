@@ -11,31 +11,41 @@ class Check(lib.basecheck.CheckBase):
     def precheck(self):
         try:
             to = []
-            with open('/proc/net/tcp') as f:
-                lineno = 0
-                sockets = []
-                for line in f:
-                    lineno += 1
-                    if lineno == 1:
-                        continue
-                    ln = line.strip()
-                    sockets.append(ln)
-            f.close()
+            yoyo = {}
+            files = ['/proc/net/tcp', '/proc/net/tcp6']
+            for file in files:
+                with open(file) as f:
+                    lineno = 0
+                    sockets = []
+                    for line in f:
+                        lineno += 1
+                        if lineno == 1:
+                            continue
+                        ln = line.strip()
+                        sockets.append(ln)
+                f.close()
 
-            for t in sockets:
-                to.append((t.split()[3]))
+                for t in sockets:
+                    to.append((t.split()[3]))
 
-            enums = {
-                '01': 'tcp_established', '02': 'tcp_syn_sent', '03': 'tcp_syn_recv', '04': 'tcp_syn_recv',
-                '05': 'tcp_fin_wait1', '06': 'tcp_fin_wait2', '07': 'tcp_time_wait',
-                '08': 'tcp_close', '09': 'tcp_close_wait', '0A': 'tcp_last_ack',
-                '0B': 'tcp_listen', '0C': 'tcp_closing', '0D': 'tcp_new_syn_recv', '0E': 'tcp_max_states'
-            }
+                enums = {
+                    '01': 'established', '02': 'syn_sent', '03': 'syn_recv', '04': 'syn_recv',
+                    '05': 'fin_wait1', '06': 'fin_wait2', '07': 'time_wait',
+                    '08': 'close', '09': 'close_wait', '0A': 'last_ack',
+                    '0B': 'listen', '0C': 'closing', '0D': 'new_syn_recv', '0E': 'max_states'
+                }
 
-            flags = ('01', '02', '03', '04', '05', '06', '07', '08', '09', '0A', '0B', '0C', '0D', '0E')
+                flags = ('01', '02', '03', '04', '05', '06', '07', '08', '09', '0A', '0B', '0C', '0D', '0E')
+                for u in flags:
+                    yoyo[u.replace(u, enums[u])] = yoyo.get(u.replace(u, enums[u]), 0) + to.count(u)
+            for k,v in yoyo.items():
+                self.local_vars.append({'name': 'tcp_connections', 'timestamp': self.timestamp, 'value': v, 'check_type': check_type, 'extra_tag':{'flag': k}})
 
-            for u in flags:
-                self.local_vars.append({'name': u.replace(u, enums[u]), 'timestamp': self.timestamp, 'value': to.count(u), 'check_type': check_type})
+            ufiles = ['/proc/net/udp', '/proc/net/udp6']
+            unum = 0
+            for ufile in ufiles:
+                unum = unum + sum(1 for _ in open(ufile))
+            self.local_vars.append({'name': 'udp_clients', 'timestamp': self.timestamp, 'value': unum, 'check_type': check_type, 'extra_tag':{'flag': "udp"}})
         except Exception as e:
             lib.puylogger.print_message(__name__ + ' Error : ' + str(e))
             pass

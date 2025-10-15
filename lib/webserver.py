@@ -4,9 +4,11 @@ import lib.getconfig
 import lib.nag
 import lib.puylogger
 import lib.pushdata
+import socket
 
 ws = lib.getconfig.getparam('WebServer', 'webserver').lower()
 wa = lib.getconfig.getparam('WebServer', 'webaddress').split(":")
+allowed = lib.getconfig.getparam('WebServer', 'allowedip').split(",")
 
 auth = False
 try:
@@ -29,6 +31,17 @@ def promvalue(mytype):
         pass
 
 
+class SecureHTTPServer(HTTPServer):
+    def get_request(self):
+        sock, addr = super().get_request()
+        client_ip, _ = addr
+        if client_ip not in  allowed:
+            lib.puylogger.print_message(f"Dropping unauthorized connection from {client_ip}")
+            sock.close()
+        sock.settimeout(2.0)
+        return sock, addr
+
+
 class PuyPuyWeb(BaseHTTPRequestHandler):
     def the_job(self):
         if self.path == '/nag':
@@ -49,6 +62,7 @@ class PuyPuyWeb(BaseHTTPRequestHandler):
             self.wfile.write(bytes("Not Found\n", "utf-8"))
 
     def do_GET(self):
+        # self.check_client()
         if self.path == '/metrics':
             self.send_response(200)
             self.send_header("Content-type", "text/plain; version=0.0.4; charset=utf-8")
@@ -67,6 +81,7 @@ class PuyPuyWeb(BaseHTTPRequestHandler):
             self.wfile.write(bytes("Not Found\n", "utf-8"))
 
     def do_POST(self):
+        # self.check_client()
         if auth:
             apikey = self.headers.get('Apikey')
             if apikey == None or apikey != key:
@@ -81,7 +96,7 @@ class PuyPuyWeb(BaseHTTPRequestHandler):
             self.the_job()
 
 def run_web():
-    webServer = HTTPServer((wa[0], int(wa[1])), PuyPuyWeb)
+    webServer = SecureHTTPServer((wa[0], int(wa[1])), PuyPuyWeb)
     lib.puylogger.print_message("Server started http://%s:%s" % (wa[0], wa[1]))
 
     try:

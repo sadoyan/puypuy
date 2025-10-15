@@ -6,7 +6,7 @@ import lib.basecheck
 import re
 
 # metrics = lib.getconfig.getparam('Gazan', 'metrics')
-metrics = "http://g01:3000/metrics"
+metrics = lib.getconfig.getparam('Aralez', 'metrics')
 check_type = 'aralez'
 greps = ('sum', 'count', 'process')
 reaction = 0
