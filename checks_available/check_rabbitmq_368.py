@@ -40,9 +40,11 @@ class Check(lib.basecheck.CheckBase):
     
             for qrate in queue_rates:
                 self.local_vars.append({'name': 'rabbitmq_'+ qrate, 'timestamp': self.timestamp, 'value': stats_json['queue_totals'][qrate]['rate'], 'check_type': check_type, 'extra_tag':{'queue': 'all'}})
-    
-            self.local_vars.append({'name': 'rabbitmq_publish_rate', 'timestamp': self.timestamp, 'value': stats_json['message_stats']['publish_details']['rate'], 'check_type': check_type, 'extra_tag': {'queue': 'all'}})
-            self.local_vars.append({'name': 'rabbitmq_deliver_rate', 'timestamp': self.timestamp, 'value': stats_json['message_stats']['deliver_details']['rate'], 'check_type': check_type, 'extra_tag': {'queue': 'all'}})
+            try:
+                self.local_vars.append({'name': 'rabbitmq_publish_rate', 'timestamp': self.timestamp, 'value': stats_json['message_stats']['publish_details']['rate'], 'check_type': check_type, 'extra_tag': {'queue': 'all'}})
+                self.local_vars.append({'name': 'rabbitmq_deliver_rate', 'timestamp': self.timestamp, 'value': stats_json['message_stats']['deliver_details']['rate'], 'check_type': check_type, 'extra_tag': {'queue': 'all'}})
+            except:
+                pass
     
             if queue_details is True:
                 url2 = rabbit_url + '/api/queues'
