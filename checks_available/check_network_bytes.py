@@ -18,11 +18,11 @@ class Check(lib.basecheck.CheckBase):
             iflist = []
             for index in range(0, len(ifaces)):
                 if check_localhost is False:
-                    iface = ifaces[index].split('/')[4]
+                    iface = ifaces[index].split('/')[-1]
                     if "/lo" not in ifaces[index]:
                         iflist.append(iface)
                 else:
-                    iface = ifaces[index].split('/')[4]
+                    iface = ifaces[index].split('/')[-1]
                     iflist.append(iface)
 
             for nic in iflist:
@@ -43,8 +43,8 @@ class Check(lib.basecheck.CheckBase):
                         self.local_vars.append({'name':rxname, 'timestamp': self.timestamp, 'value':rxrate, 'chart_type': 'Rate', 'check_type': check_type, 'reaction': 0, 'extra_tag':{'interface': nic}})
                         self.local_vars.append({'name':txname, 'timestamp': self.timestamp, 'value':txrate, 'chart_type': 'Rate', 'check_type': check_type, 'reaction': 0, 'extra_tag':{'interface': nic}})
                     else:
-                        self.local_vars.append({'name':rxname, 'timestamp': self.timestamp, 'value':rxrate, 'chart_type': 'Counter', 'check_type': check_type, 'reaction': 0, 'extra_tag':{'interface': nic}})
-                        self.local_vars.append({'name':txname, 'timestamp': self.timestamp, 'value':txrate, 'chart_type': 'Counter', 'check_type': check_type, 'reaction': 0, 'extra_tag':{'interface': nic}})
+                        self.local_vars.append({'name':rxname, 'timestamp': self.timestamp, 'value':rx, 'chart_type': 'Counter', 'check_type': check_type, 'reaction': 0, 'extra_tag':{'interface': nic}})
+                        self.local_vars.append({'name':txname, 'timestamp': self.timestamp, 'value':tx, 'chart_type': 'Counter', 'check_type': check_type, 'reaction': 0, 'extra_tag':{'interface': nic}})
 
                 rxb.close()
                 txb.close()

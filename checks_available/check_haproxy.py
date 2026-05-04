@@ -25,10 +25,11 @@ class Check(lib.basecheck.CheckBase):
 
             reader = csv.DictReader(StringIO(t, newline='\n'), delimiter=',')
             for row in reader:
-                if row["svname"] == "BACKEND":
+                if row["svname"] == "BACKEND" or row["svname"] == "FRONTEND":
                     for k,v in row.items():
                         if k in interested:
                             if v != "":
+                                # self.local_vars.append({'name': 'haproxy_' + k, 'timestamp': self.timestamp, 'value': v, 'check_type': check_type, 'chart_type': 'Rate','extra_tag': {'appname': row["# pxname"]}})
                                 lib.puylogger.print_message({'name': 'haproxy_' + k, 'timestamp': self.timestamp, 'value': v, 'check_type': check_type, 'chart_type': 'Rate','extra_tag': {'appname': row["# pxname"]}})
         except Exception as e:
             lib.puylogger.print_message(__name__ + ' Error : ' + str(e))

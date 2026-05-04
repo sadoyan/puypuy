@@ -11,7 +11,7 @@ check_type = 'aralez'
 greps = ('sum', 'count', 'process')
 reaction = 0
 
-rated = {'aralez_requests_by_method_total', 'aralez_requests_total', 'aralez_responses_total', 'aralez_requests_by_version_total'}
+rated = {'aralez_requests_by_method_total', 'aralez_requests_total', 'aralez_responses_total', 'aralez_requests_by_version_total', 'aralez_requests_by_upstream'}
 mat = {'aralez_request_latency_seconds_bucket', 'aralez_response_latency_seconds_bucket'}
 
 class Check(lib.basecheck.CheckBase):
