@@ -12,7 +12,7 @@ greps = ('sum', 'count', 'process')
 reaction = 0
 
 rated = {'aralez_requests_by_method_total', 'aralez_requests_total', 'aralez_responses_total', 'aralez_requests_by_version_total', 'aralez_requests_by_upstream'}
-mat = {'aralez_request_latency_seconds_bucket', 'aralez_response_latency_seconds_bucket'}
+mat = {'aralez_response_latency_seconds_bucket'}
 
 class Check(lib.basecheck.CheckBase):
     def precheck(self):
@@ -47,11 +47,6 @@ class Check(lib.basecheck.CheckBase):
                         else:
                             self.local_vars.append({'name': a[0], 'timestamp': self.timestamp, 'value': a[-1], 'reaction': reaction})
             # result = histogram_quantile(0.95, buckets)
-            for x in [0.50, 0.75, 0.85, 0.90, 0.95, 0.99]:
-                value = histogram_quantile(x, request)
-                n = "percentile"
-                v = str(int(x*100))
-                self.local_vars.append({'name': "aralez_request_latency", 'timestamp': self.timestamp, 'value': value, 'reaction': reaction, 'check_type': check_type, 'extra_tag': {n: v}})
             for x in [0.50, 0.75, 0.85, 0.90, 0.95, 0.99]:
                 value = histogram_quantile(x, response)
                 n = "percentile"

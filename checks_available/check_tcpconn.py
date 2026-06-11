@@ -7,13 +7,12 @@ check_type = 'system'
 reaction = -3
 
 class Check(lib.basecheck.CheckBase):
-
     def precheck(self):
         try:
-            to = []
             yoyo = {}
             files = ['/proc/net/tcp', '/proc/net/tcp6']
             for file in files:
+                to = []
                 with open(file) as f:
                     lineno = 0
                     sockets = []
