@@ -85,7 +85,7 @@ while conf_system_checks not in ['yes', 'no']:
 parser = ConfigParser()
 config_file = 'conf/config.ini'
 parser.read(config_file)
-service_file = '/lib/systemd/system/oe-agent.service'
+service_file = '/lib/systemd/system/puypuy.service'
 sparser = ConfigParser()
 sparser.optionxform = str
 
@@ -221,16 +221,16 @@ else:
 
 if systemd_service == 'yes':
     subprocess.Popen('systemctl daemon-reload', stdout=subprocess.PIPE, shell=True).communicate()
-    subprocess.Popen('systemctl enable oe-agent.service', stdout=subprocess.PIPE, shell=True).communicate()
-    subprocess.Popen('systemctl start oe-agent', stdout=subprocess.PIPE, shell=True).communicate()
-    print(bcolors.OKGREEN + 'Autostart of oe-agent is enabled' + bcolors.OKGREEN)
+    subprocess.Popen('systemctl enable puypuy.service', stdout=subprocess.PIPE, shell=True).communicate()
+    subprocess.Popen('systemctl start puypuy', stdout=subprocess.PIPE, shell=True).communicate()
+    print(bcolors.OKGREEN + 'Autostart of puypuy is enabled' + bcolors.OKGREEN)
 elif systemd_service == 'no':
     print(bcolors.OKGREEN + ' ' + bcolors.OKGREEN)
-    print(bcolors.OKGREEN + 'Will not run oe-agent on boot, please manually start it' + bcolors.OKGREEN)
-    print(bcolors.OKGREEN + 'You can  install oe-agent systemd service later by running ' + base_dir +'/installservice.py ' + 'script' + bcolors.OKGREEN)
+    print(bcolors.OKGREEN + 'Will not run puypuy on boot, please manually start it' + bcolors.OKGREEN)
+    print(bcolors.OKGREEN + 'You can  install puypuy systemd service later by running ' + base_dir +'/installservice.py ' + 'script' + bcolors.OKGREEN)
 else:
     print(bcolors.FAIL + ' ' + bcolors.FAIL)
-    print(bcolors.FAIL + 'Failed to add oe-agent to autostart' + bcolors.FAIL)
+    print(bcolors.FAIL + 'Failed to add puypuy to autostart' + bcolors.FAIL)
 
 for root, dirs, files in os.walk(base_dir, topdown=False):
     for name in files:
