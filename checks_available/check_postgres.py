@@ -50,7 +50,7 @@ class Check(lib.basecheck.CheckBase):
                     if key in the_list:
                         if value > 0:
                             reqrate = self.rate.record_value_rate('psql_'+ key, value, self.timestamp)
-                            self.local_vars.append({'name': 'psql_'+ key, 'timestamp': self.timestamp, 'value': reqrate, 'check_type': check_type, 'extra_tag': {'dbname': row["datname"]}})
+                            self.local_vars.append({'name': 'psql_'+ key + row["datname"], 'timestamp': self.timestamp, 'value': reqrate, 'check_type': check_type, 'extra_tag': {'dbname': row["datname"]}})
                         else:
                             self.local_vars.append({'name': 'psql_' + key, 'timestamp': self.timestamp, 'value': 0, 'check_type': check_type, 'extra_tag': {'dbname': row["datname"]}})
             cur.close()
