@@ -15,7 +15,6 @@ check_type = 'psql'
 rate_list = ("xact_commit", "xact_rollback", "blks_read", "blks_hit",
             "tup_returned", "tup_fetched", "tup_inserted", "tup_updated", "tup_deleted",
             "temp_files", "temp_bytes", "deadlocks", "conflicts", "checksum_failures")
-the_list = ("numbackends")
 class Check(lib.basecheck.CheckBase):
 
     def precheck(self):
@@ -47,12 +46,17 @@ class Check(lib.basecheck.CheckBase):
                     pass
                 self.local_vars.append({'name': 'psql_numbackends', 'timestamp': self.timestamp, 'value': row["numbackends"], 'check_type': check_type, 'extra_tag': {'dbname': row["datname"]}})
                 for key, value in row.items():
-                    if key in the_list:
+                    if key in rate_list:
                         if value > 0:
-                            reqrate = self.rate.record_value_rate('psql_'+ key + row["datname"], value, self.timestamp)
-                            self.local_vars.append({'name': 'psql_'+ key, 'timestamp': self.timestamp, 'value': reqrate, 'check_type': check_type, 'extra_tag': {'dbname': row["datname"]}})
+                            if row["datname"]:
+                                reqrate = self.rate.record_value_rate('psql_'+ key + row["datname"], value, self.timestamp)
+                                self.local_vars.append({'name': 'psql_'+ key, 'timestamp': self.timestamp, 'value': reqrate, 'check_type': check_type, 'extra_tag': {'dbname': row["datname"]}})
+                            else:
+                                reqrate = self.rate.record_value_rate('psql_'+ key + '_none', value, self.timestamp)
+                                self.local_vars.append({'name': 'psql_'+ key, 'timestamp': self.timestamp, 'value': reqrate, 'check_type': check_type, 'extra_tag': {'dbname': 'None'}})
                         else:
-                            self.local_vars.append({'name': 'psql_' + key, 'timestamp': self.timestamp, 'value': 0, 'check_type': check_type, 'extra_tag': {'dbname': row["datname"]}})
+                            if row["datname"]:
+                                self.local_vars.append({'name': 'psql_' + key, 'timestamp': self.timestamp, 'value': 0, 'check_type': check_type, 'extra_tag': {'dbname': row["datname"]}})
             cur.close()
             db.close()
         except Exception as e:
