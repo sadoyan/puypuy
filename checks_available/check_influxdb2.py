@@ -9,7 +9,6 @@ check_type = 'influxdb'
 
 metrics = lib.getconfig.getparam("InfluxDB2", "metrics")
 special = ("http_api_requests_total")
-qc = ("qc_requests_total")
 greps = ("boltdb_reads_total", "boltdb_writes_total",
          "go_goroutines", "go_memstats_alloc_bytes", "go_memstats_heap_alloc_bytes",
          "go_memstats_heap_alloc_bytes", "go_memstats_heap_idle_bytes", "go_threads",
@@ -17,9 +16,10 @@ greps = ("boltdb_reads_total", "boltdb_writes_total",
          "task_executor_workers_busy", "task_scheduler_current_execution",
          "task_scheduler_total_execute_failure", "task_scheduler_total_schedule_fails"
          )
-detailed = ("http_query_request_bytes", "http_query_request_count","http_query_response_bytes",
+detailed = ("http_query_request_bytes", "http_query_request_count","http_query_response_bytes", "qc_requests_total",
            "http_write_request_bytes","http_write_request_count", "http_write_response_bytes")
-other = ("storage_writer_ok_points_count","storage_writer_err_points_count", "storage_writer_dropped_points_count", "storage_writer_timeouts")
+other = ("storage_writer_ok_points_count","storage_writer_err_points_count", "storage_writer_dropped_points_count", "storage_writer_timeouts",
+         "qc_queueing_active","qc_executing_active", "qc_compiling_active")
 reaction = 0
 
 class Check(lib.basecheck.CheckBase):
